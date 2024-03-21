@@ -98,21 +98,18 @@ def post_book_seat(cookie,lib_id,seat_key):
 def main_loop(cookie,data_list):
     ws_result = ws(cookie)
     if ws_result == 1:
-        index = 0
-        while index < len(data_list):
+        for index,data in enumerate(data_list):
             global SLEEP_POST
-            data = data_list[index]
+            # data = data_list[index]
             post_get_lib_list(cookie=cookie, lib_id="10073")
             response = post_book_seat(cookie=cookie, lib_id=data["lib_id"], seat_key=data["seat_key"])
             response_text = response.text
             print(f'- [post]:{json.loads(response_text)}')
             time.sleep(SLEEP_POST)
-            if "error" in response_text:
-                index += 1
-                continue
-            else:
+            if "error" not in response_text:
                 print('- [post]<选座成功>')
                 return True
+
     elif ws_result == 2:
         return True
     else:
