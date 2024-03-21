@@ -96,6 +96,7 @@ def post_book_seat(cookie,lib_id,seat_key):
     return response
 
 def main_loop(cookie,data_list):
+    print(data_list)
     ws_result = ws(cookie)
     if ws_result == 1:
         for index,data in enumerate(data_list):

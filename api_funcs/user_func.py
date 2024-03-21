@@ -127,7 +127,7 @@ async def user_all_seats_clean(data):
         data_dict["lib_id"] = str(i["seat_lib"]["lib_id"])
         data_dict["seat_key"] = i["seat_data"]["seat_key"]
         task_data_list.append(data_dict)
-        return task_data_list
+    return task_data_list
 
 #tools-获取微信cookie
 async def get_wechat_cookie(url:str):
@@ -146,6 +146,7 @@ async def add_task_func(user,wx_url):
     if data:
         try:
             data =  await user_all_seats_clean(data)
+            print(f'func-add_task_func:{data}')
             wx_cookie = await get_wechat_cookie(url =wx_url)
             if wx_cookie:
                 data = add_task.delay(wx_cookie, data)
