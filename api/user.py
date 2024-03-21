@@ -48,6 +48,8 @@ async def create_role_permission(data:schemas.CreateTaskIn,user=Depends(user_aut
         return error_response('微信身份链接已失效，请重新获取！')
     if result == -2:
         return error_response('出错了！请稍后再试')
+    if result == -4:
+        return error_response('不在提交时间范围内！')
     else:
         return error_response('出错了！请稍后再试！')
 
