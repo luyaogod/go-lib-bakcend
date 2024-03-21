@@ -1,5 +1,6 @@
 import celery
-from get_seats import main_loop
+# from get_seats import main_loop
+from get_seats_2 import main_loop
 from settings import BROKER_URL,BACKEND_URL
 
 backend = BACKEND_URL

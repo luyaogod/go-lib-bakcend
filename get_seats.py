@@ -77,7 +77,7 @@ def ws(cookie):
         ws.connect("wss://wechat.v2.traceint.com/ws?ns=prereserve/queue", header=headers)
         ws.send('{"ns":"prereserve/queue","msg":""}')
         response = ws.recv()
-        print("- ws:",response)
+        print(f"- ws:{response}",)
         if WS_SUCCESS_QUEUE == response:
             ws.close()
             print('- ws:排队成功')

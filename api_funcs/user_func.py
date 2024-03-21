@@ -141,43 +141,44 @@ async def get_wechat_cookie(url:str):
         return None
 
 #func 测试
-# async def add_task_func(user,wx_url):
-#     data =  await user_all_seat(user)
-#     if data:
-#         try:
-#             data =  await user_all_seats_clean(data)
-#             wx_cookie = await get_wechat_cookie(url =wx_url)
-#             if wx_cookie:
-#                 data = add_task.delay(wx_cookie, data)
-#                 print('- 任务已添加:', data.id)
-#                 return 0
-#             else:
-#                 return -3 #wxcookie无效
-#         except Exception:
-#             return -2 #数据处理未知错误
-#     else:
-#         return -1 #用户未绑定座位
-
-#func 提交任务
 async def add_task_func(user,wx_url):
     data =  await user_all_seat(user)
-    current_utc_time = datetime.now(timezone.utc)
-    result = time_validate(current_utc_time)
-    if result:
-        if data:
-            try:
-                data = await user_all_seats_clean(data)
-                wx_cookie = await get_wechat_cookie(url=wx_url)
-                if wx_cookie:
-                    set_time = get_set_time(current_utc_time)
-                    data = add_task.apply_async(args=[wx_cookie, data], eta=set_time)
-                    print('- 任务已添加:', data.id)
-                else:
-                    return -3  # wxcookie无效
-            except Exception:
-                return -2  # 数据处理未知错误
-        else:
-            return -1  # 用户不存在或者用户未绑定座位
+    if data:
+        try:
+            data =  await user_all_seats_clean(data)
+            wx_cookie = await get_wechat_cookie(url =wx_url)
+            if wx_cookie:
+                data = add_task.delay(wx_cookie, data)
+                print('- 任务已添加:', data.id)
+                return 0
+            else:
+                return -3 #wxcookie无效
+        except Exception:
+            return -2 #数据处理未知错误
     else:
-        return -4 #不在时间范围内
+        return -1 #用户未绑定座位
+
+#func 提交任务
+# async def add_task_func(user,wx_url):
+#     data =  await user_all_seat(user)
+#     current_utc_time = datetime.now(timezone.utc)
+#     result = time_validate(current_utc_time)
+#     if result:
+#         if data:
+#             try:
+#                 data = await user_all_seats_clean(data)
+#                 wx_cookie = await get_wechat_cookie(url=wx_url)
+#                 if wx_cookie:
+#                     set_time = get_set_time(current_utc_time)
+#                     data = add_task.apply_async(args=[wx_cookie, data], eta=set_time)
+#                     print('- 任务已添加:', data.id)
+#                     return 0
+#                 else:
+#                     return -3  # wxcookie无效
+#             except Exception:
+#                 return -2  # 数据处理未知错误
+#         else:
+#             return -1  # 用户不存在或者用户未绑定座位
+#     else:
+#         return -4 #不在时间范围内
 
