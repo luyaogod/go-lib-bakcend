@@ -17,13 +17,13 @@ services:
 
   backend:
     container_name: backend
-    build: ./backend    
+    build: .
 
     command: bash -c "chmod +x wait-for-it.sh && ./wait-for-it.sh db:3306 --timeout=30 --strict -- python3 db_init.py && python3 main.py"
 #    command: bash -c "python3 main.py"
     # command: bash -c "uvicorn main:app --host 0.0.0.0 --port 8000 --reload"
     volumes:
-      - ./backend:/app
+      - .:/app
     ports:
       - "8000:8000"
     depends_on:
@@ -33,10 +33,10 @@ services:
   
   celery:
     container_name: celery
-    build: ./backend
+    build: .
     command: bash -c "celery -A my_celery worker -l INFO"
     volumes:
-      - ./backend:/app
+      - .:/app
     depends_on:
       - db
       - redis
