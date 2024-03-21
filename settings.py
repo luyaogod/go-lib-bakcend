@@ -4,8 +4,8 @@ TORTOISE_ORM = {
             'default': {
                 'engine': 'tortoise.backends.mysql',
                 'credentials': {
-                    'host': 'localhost',
-                    # 'host': 'db',
+                    # 'host': 'localhost',
+                    'host': 'db',
                     'port': '3306',
                     'user': 'root',
                     'password': 'maluyao123',
@@ -24,16 +24,16 @@ TORTOISE_ORM = {
     }
 
 #跨域本地调试配置
-ALLOWHOSTS = [
-    "http://localhost",
-    "http://localhost:8000",
-    "http://localhost:5173",
-]
+# ALLOWHOSTS = [
+#     "http://localhost",
+#     "http://localhost:8000",
+#     "http://localhost:5173",
+# ]
 
 #跨域服务器配置
-# ALLOWHOSTS = [
-#     "*"
-# ]
+ALLOWHOSTS = [
+    "*"
+]
 
 BROKER_URL = 'redis://redis:6379/0' #存放结果
 BACKEND_URL = 'redis://redis:6379/1' #消息中间件
