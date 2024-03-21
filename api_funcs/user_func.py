@@ -121,8 +121,8 @@ async def user_all_seat(user):
 
 #tools 所有座位列表取楼层id和座位key
 async def user_all_seats_clean(data):
+    task_data_list = []
     for i in data:
-        task_data_list = []
         data_dict = {}
         data_dict["lib_id"] = str(i["seat_lib"]["lib_id"])
         data_dict["seat_key"] = i["seat_data"]["seat_key"]
