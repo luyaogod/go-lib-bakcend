@@ -43,6 +43,8 @@ async def create_user(username):
     uuid = generate_uuid()
     await User.create(username=username,uuid=uuid)
 
+#test---
+
 
 async def main():
     await init()
@@ -51,6 +53,5 @@ async def main():
     await insert_seat(libs)
     await User.create(username = ADMIN_NAME,uuid=ADMIN_UUID)
 
-    # print(data)
 
 run_async(main())

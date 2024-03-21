@@ -3,8 +3,16 @@ from utils.dependence import user_auth_dependencie
 from api_funcs import user_func
 from utils.response import success_response,error_response
 import schemas
+# from typing import List
 
 router = APIRouter()
+
+@router.get('/get_user/{uuid}',summary='用户校验')
+async def get_user(user=Depends(user_auth_dependencie)):
+    if user:
+        return success_response(dict(user))
+    else:
+        return error_response('用户不存在')
 
 @router.get('/ge_all_lib/{uuid}',summary='获取座位列表')
 async def ge_all_lib(user=Depends(user_auth_dependencie)):
@@ -53,3 +61,11 @@ async def create_role_permission(data:schemas.CreateTaskIn,user=Depends(user_aut
     else:
         return error_response('出错了！请稍后再试！')
 
+@router.post('/update_seat_list/{uuid}',summary='更新座位列表')
+async def update_seat_list(data:schemas.SeatsListIn,user=Depends(user_auth_dependencie)):
+    data_list = data.model_dump()['seats']
+    data =  await user_func.update_user_seat_list(user,data_list)
+    if data == 0:
+        return success_response('保存成功')
+    else:
+        return error_response(f'第{data}个座位不存在！')

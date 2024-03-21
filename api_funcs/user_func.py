@@ -35,7 +35,7 @@ async def user_seat_size_validate(user)->int:
     else:
         return True
 
-#func 更新座位
+#func 添加座位
 async def add_seat_user_relation(user,lib_id,seat_name_id):
     # user = await get_user(uuid)
     # if user:
@@ -51,6 +51,42 @@ async def add_seat_user_relation(user,lib_id,seat_name_id):
         return -2 #用户可添加座位已满
     # else:
         # return -1 #用户不存在
+
+#tools 校验自足座位信息并返回座位id列表
+async def get_and_validate_seat_list(datalist):
+    """
+    datalist = [
+        {"lib_id": 5, "seat_name_id": 604},
+        {"lib_id": 5, "seat_name_id": 605},
+        {"lib_id": 5, "seat_name_id": 606},
+        {"lib_id": 5, "seat_name_id": 607},
+        {"lib_id": 5, "seat_name_id": 608},
+        {"lib_id": 5, "seat_name_id": 609},
+    ]
+    """
+    id_list = []
+    count = 1
+    for data in datalist:
+        seat = await get_seat(lib_id=data['lib_id'],seat_name_id=data['seat_name_id'])
+        if seat:
+             id_list.append(seat.id)
+             count += 1
+        else:
+            return count
+    else:
+        return id_list
+
+#tools 同时更新一组座位
+async def update_user_seat_list(user,datalist):
+    seat_id_list = await get_and_validate_seat_list(datalist)
+    print(seat_id_list)
+    if type(seat_id_list) == int:
+        return seat_id_list #校验失败返回错误数据的位序
+    else:
+        await user.seats.clear()
+        seats = await Seat.filter(id__in = seat_id_list)
+        await user.seats.add(*seats)
+        return 0
 
 #func 删除座位
 async def delete_seat_user_relation(user,seat_id):
