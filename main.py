@@ -1,0 +1,49 @@
+import uvicorn
+from fastapi import FastAPI,HTTPException
+from fastapi.exceptions import RequestValidationError
+from settings import TORTOISE_ORM,ALLOWHOSTS
+from tortoise.contrib.fastapi import register_tortoise
+from api import user,admin
+from tortoise.exceptions import OperationalError, DoesNotExist, IntegrityError, ValidationError
+from utils import exception
+from fastapi.middleware.cors import CORSMiddleware
+
+
+app = FastAPI()
+
+
+#router
+app.include_router(user.router, prefix='/user', tags=['用户API'])
+app.include_router(admin.router, prefix='/admin', tags=['管理API'])
+
+
+# exception_handing
+app.add_exception_handler(HTTPException, exception.http_error_handler)
+app.add_exception_handler(RequestValidationError, exception.http422_error_handler)
+app.add_exception_handler(exception.UnicornException, exception.unicorn_exception_handler)
+app.add_exception_handler(DoesNotExist, exception.mysql_does_not_exist)
+app.add_exception_handler(IntegrityError, exception.mysql_integrity_error)
+app.add_exception_handler(ValidationError, exception.mysql_validation_error)
+app.add_exception_handler(OperationalError, exception.mysql_operational_error)
+
+
+#db
+register_tortoise(
+    app=app,
+    config=TORTOISE_ORM
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=ALLOWHOSTS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+if __name__ == "__main__":
+    uvicorn.run('main:app', host='127.0.0.1', port=8000, reload=True, workers=1)
+    # uvicorn.run('main:app', host='0.0.0.0', port=8000, reload=True, workers=1)
+
+
+
