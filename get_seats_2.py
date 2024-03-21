@@ -110,6 +110,7 @@ def main_loop(cookie,data_list):
         #         print('- [post]<选座成功>')
         #         return True
         # global SLEEP_POST
+        print(data_list)
         data1 = data_list[1]
         data2 = data_list[2]
         data3 = data_list[3]
