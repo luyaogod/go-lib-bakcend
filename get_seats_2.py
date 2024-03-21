@@ -98,17 +98,40 @@ def post_book_seat(cookie,lib_id,seat_key):
 def main_loop(cookie,data_list):
     ws_result = ws(cookie)
     if ws_result == 1:
-        for index,data in enumerate(data_list):
-            global SLEEP_POST
-            # data = data_list[index]
-            post_get_lib_list(cookie=cookie, lib_id="10073")
-            response = post_book_seat(cookie=cookie, lib_id=data["lib_id"], seat_key=data["seat_key"])
-            response_text = response.text
-            print(f'- [post]:{json.loads(response_text)}')
-            time.sleep(SLEEP_POST)
-            if "error" not in response_text:
-                print('- [post]<选座成功>')
-                return True
+        # for index,data in enumerate(data_list):
+        #     global SLEEP_POST
+        #     # data = data_list[index]
+        #     post_get_lib_list(cookie=cookie, lib_id="10073")
+        #     response = post_book_seat(cookie=cookie, lib_id=data["lib_id"], seat_key=data["seat_key"])
+        #     response_text = response.text
+        #     print(f'- [post]:{json.loads(response_text)}')
+        #     time.sleep(SLEEP_POST)
+        #     if "error" not in response_text:
+        #         print('- [post]<选座成功>')
+        #         return True
+        # global SLEEP_POST
+        data1 = data_list[1]
+        data2 = data_list[2]
+        data3 = data_list[3]
+        post_get_lib_list(cookie=cookie, lib_id="10073")
+        response = post_book_seat(cookie=cookie, lib_id=data1["lib_id"], seat_key=data1["seat_key"])
+        response_text = response.text
+        print(f'- [post]:{json.loads(response_text)}')
+        time.sleep(SLEEP_POST)
+
+        post_get_lib_list(cookie=cookie, lib_id="10073")
+        response = post_book_seat(cookie=cookie, lib_id=data2["lib_id"], seat_key=data2["seat_key"])
+        response_text = response.text
+        print(f'- [post]:{json.loads(response_text)}')
+        time.sleep(SLEEP_POST)
+
+        post_get_lib_list(cookie=cookie, lib_id="10073")
+        response = post_book_seat(cookie=cookie, lib_id=data3["lib_id"], seat_key=data3["seat_key"])
+        response_text = response.text
+        print(f'- [post]:{json.loads(response_text)}')
+        time.sleep(SLEEP_POST)
+
+
 
     elif ws_result == 2:
         return True
@@ -146,4 +169,5 @@ data_list = [
     },
 ]
 
-main_loop(cookie=cookie,data_list=data_list)
+if __name__ == "__main__":
+    main_loop(cookie=cookie,data_list=data_list)
