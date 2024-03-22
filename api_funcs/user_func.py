@@ -16,7 +16,7 @@ async def get_user(uuid):
 
 #tools
 async def get_seat(lib_id,seat_name_id):
-    lib = await  Lib.get_or_none(pk=lib_id)
+    lib = await  Lib.get_or_none(lib_id=lib_id) #更改为使用lib_id查找
     if lib:
         data =  await Seat.get_or_none(seat_id=seat_name_id,lib=lib)
         if data:
@@ -52,40 +52,44 @@ async def add_seat_user_relation(user,lib_id,seat_name_id):
     # else:
         # return -1 #用户不存在
 
-#tools 校验自足座位信息并返回座位id列表
+#tools 校验座位信息并返回座位id列表
 async def get_and_validate_seat_list(datalist):
     """
     datalist = [
-        {"lib_id": 5, "seat_name_id": 604},
-        {"lib_id": 5, "seat_name_id": 605},
-        {"lib_id": 5, "seat_name_id": 606},
-        {"lib_id": 5, "seat_name_id": 607},
-        {"lib_id": 5, "seat_name_id": 608},
-        {"lib_id": 5, "seat_name_id": 609},
+        {"lib_id": 10080, "seat_name_id": 604},
+        {"lib_id": 10080, "seat_name_id": 605},
+        {"lib_id": 10080, "seat_name_id": 606},
+        {"lib_id": 10080, "seat_name_id": 607},
+        {"lib_id": 10080, "seat_name_id": 608},
+        {"lib_id": 10080, "seat_name_id": 609},
     ]
     """
-    id_list = []
+    # print('座位校验函数收到的数据组-',datalist)
+    seat_list = []
     count = 1
     for data in datalist:
         seat = await get_seat(lib_id=data['lib_id'],seat_name_id=data['seat_name_id'])
         if seat:
-             id_list.append(seat.id)
+             seat_list.append(seat)
              count += 1
         else:
             return count
     else:
-        return id_list
+        return seat_list
 
 #tools 同时更新一组座位
 async def update_user_seat_list(user,datalist):
-    seat_id_list = await get_and_validate_seat_list(datalist)
-    print(seat_id_list)
-    if type(seat_id_list) == int:
-        return seat_id_list #校验失败返回错误数据的位序
+    # print('-座位更新函数收到的数据组', datalist)
+    seat_list = await get_and_validate_seat_list(datalist)
+    # print('数据校验输出的list:',seat_id_list)
+    # for seat in seat_list:
+    #     print(seat.seat_id)
+    if type(seat_list) == int:
+        return seat_list #校验失败返回错误数据的位序
     else:
         await user.seats.clear()
-        seats = await Seat.filter(id__in = seat_id_list)
-        await user.seats.add(*seats)
+        # seats = await Seat.filter(id__in = seat_id_list)
+        await user.seats.add(*seat_list)
         return 0
 
 #func 删除座位
@@ -141,45 +145,45 @@ async def get_wechat_cookie(url:str):
         return None
 
 #func 测试
-async def add_task_func(user,wx_url):
-    data =  await user_all_seat(user)
-    if data:
-        try:
-            data =  await user_all_seats_clean(data)
-            print(f'func-add_task_func:{data}')
-            wx_cookie = await get_wechat_cookie(url =wx_url)
-            if wx_cookie:
-                data = add_task.delay(wx_cookie, data)
-                print('- 任务已添加:', data.id)
-                return 0
-            else:
-                return -3 #wxcookie无效
-        except Exception:
-            return -2 #数据处理未知错误
-    else:
-        return -1 #用户未绑定座位
-
-#func 提交任务
 # async def add_task_func(user,wx_url):
 #     data =  await user_all_seat(user)
-#     current_utc_time = datetime.now(timezone.utc)
-#     result = time_validate(current_utc_time)
-#     if result:
-#         if data:
-#             try:
-#                 data = await user_all_seats_clean(data)
-#                 wx_cookie = await get_wechat_cookie(url=wx_url)
-#                 if wx_cookie:
-#                     set_time = get_set_time(current_utc_time)
-#                     data = add_task.apply_async(args=[wx_cookie, data], eta=set_time)
-#                     print('- 任务已添加:', data.id)
-#                     return 0
-#                 else:
-#                     return -3  # wxcookie无效
-#             except Exception:
-#                 return -2  # 数据处理未知错误
-#         else:
-#             return -1  # 用户不存在或者用户未绑定座位
+#     if data:
+#         try:
+#             data =  await user_all_seats_clean(data)
+#             print(f'func-add_task_func:{data}')
+#             wx_cookie = await get_wechat_cookie(url =wx_url)
+#             if wx_cookie:
+#                 data = add_task.delay(wx_cookie, data)
+#                 print('- 任务已添加:', data.id)
+#                 return 0
+#             else:
+#                 return -3 #wxcookie无效
+#         except Exception:
+#             return -2 #数据处理未知错误
 #     else:
-#         return -4 #不在时间范围内
+#         return -1 #用户未绑定座位
+
+#func 提交任务
+async def add_task_func(user,wx_url):
+    data =  await user_all_seat(user)
+    current_utc_time = datetime.now(timezone.utc)
+    result = time_validate(current_utc_time)
+    if result:
+        if data:
+            try:
+                data = await user_all_seats_clean(data)
+                wx_cookie = await get_wechat_cookie(url=wx_url)
+                if wx_cookie:
+                    set_time = get_set_time(current_utc_time)
+                    data = add_task.apply_async(args=[wx_cookie, data], eta=set_time)
+                    print('- 任务已添加:', data.id)
+                    return 0
+                else:
+                    return -3  # wxcookie无效
+            except Exception:
+                return -2  # 数据处理未知错误
+        else:
+            return -1  # 用户不存在或者用户未绑定座位
+    else:
+        return -4 #不在时间范围内
 

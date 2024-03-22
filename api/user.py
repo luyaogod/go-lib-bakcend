@@ -14,13 +14,13 @@ async def get_user(user=Depends(user_auth_dependencie)):
     else:
         return error_response('用户不存在')
 
-@router.get('/ge_all_lib/{uuid}',summary='获取座位列表')
+@router.get('/get_all_lib/{uuid}',summary='获取座位列表')
 async def ge_all_lib(user=Depends(user_auth_dependencie)):
     result =  await user_func.user_all_seat(user)
     if result:
         return success_response(result)
     else:
-        return error_response("请绑定座位")
+        return error_response([])
 
 @router.post('/create_seat/{uuid}',summary='创建常用座位')
 async def create_role_permission(data:schemas.CreateSeatIn,user=Depends(user_auth_dependencie)):

@@ -6,6 +6,13 @@ from utils.response import success_response,error_response
 
 router = APIRouter()
 
+@router.get('/admin_auth/{uuid}',summary='管理员验证')
+async def create_user(user=Depends(admin_auth_dependencie)):
+    if user:
+        return success_response('验证成功')
+    else:
+        return error_response('非法管理员')
+
 @router.post('/create_user/{uuid}',summary='用户创建')
 async def create_user(data:schemas.CreateUserIn,user=Depends(admin_auth_dependencie)):
     await admin_func.create_user(data.username)
