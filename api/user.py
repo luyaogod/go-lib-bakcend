@@ -3,16 +3,24 @@ from utils.dependence import user_auth_dependencie
 from api_funcs import user_func
 from utils.response import success_response,error_response
 import schemas
+# from typing import List
 
 router = APIRouter()
 
-@router.get('/ge_all_lib/{uuid}',summary='获取座位列表')
+@router.get('/get_user/{uuid}',summary='用户校验')
+async def get_user(user=Depends(user_auth_dependencie)):
+    if user:
+        return success_response(dict(user))
+    else:
+        return error_response('用户不存在')
+
+@router.get('/get_all_lib/{uuid}',summary='获取座位列表')
 async def ge_all_lib(user=Depends(user_auth_dependencie)):
     result =  await user_func.user_all_seat(user)
     if result:
         return success_response(result)
     else:
-        return error_response("请绑定座位")
+        return error_response([])
 
 @router.post('/create_seat/{uuid}',summary='创建常用座位')
 async def create_role_permission(data:schemas.CreateSeatIn,user=Depends(user_auth_dependencie)):
@@ -48,6 +56,16 @@ async def create_role_permission(data:schemas.CreateTaskIn,user=Depends(user_aut
         return error_response('微信身份链接已失效，请重新获取！')
     if result == -2:
         return error_response('出错了！请稍后再试')
+    if result == -4:
+        return error_response('不在提交时间范围内！')
     else:
         return error_response('出错了！请稍后再试！')
 
+@router.post('/update_seat_list/{uuid}',summary='更新座位列表')
+async def update_seat_list(data:schemas.SeatsListIn,user=Depends(user_auth_dependencie)):
+    data_list = data.model_dump()['seats']
+    data =  await user_func.update_user_seat_list(user,data_list)
+    if data == 0:
+        return success_response('保存成功')
+    else:
+        return error_response(f'第{data}个座位不存在！')

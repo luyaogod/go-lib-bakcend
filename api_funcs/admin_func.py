@@ -1,4 +1,4 @@
-from models import User,Seat,Lib
+from models import User
 from utils.create_uuid import generate_uuid
 from settings import ADMIN_NAME
 
