@@ -2,6 +2,7 @@ import requests
 import websocket
 import time
 import json
+from websocket._exceptions import WebSocketConnectionClosedException
 
 UA = "Mozilla/5.0 (Linux; Android 10; TAS-AL00 Build/HUAWEITAS-AL00; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/107.0.5304.141 Mobile Safari/537.36 XWEB/5043 MMWEBSDK/20221109 MMWEBID/6856 MicroMessenger/8.0.31.2281(0x28001F59) WeChat/arm64 Weixin NetType/WIFI Language/zh_CN ABI/arm64"
 
@@ -57,7 +58,10 @@ def ws(cookie):
     while count<WSSIZE:
         ws.connect("wss://wechat.v2.traceint.com/ws?ns=prereserve/queue", header=headers)
         ws.send('{"ns":"prereserve/queue","msg":""}')
-        response = ws.recv()
+        try:
+            response = ws.recv()
+        except WebSocketConnectionClosedException:
+            print('[ws-except]:<连接主动关闭>')
         print(f"- [ws]:{json.loads(response)}",)
         if WS_SUCCESS_BOOK in response:
             print('- [ws]:<已选过座位>')
@@ -117,36 +121,39 @@ def main_loop(cookie,data_list):
     else:
         return False
 
-cookie = "FROM_TYPE=weixin; v=5.5; Hm_lvt_7ecd21a13263a714793f376c18038a87=1710848937,1710863114,1710936424,1710997070; wechatSESS_ID=e6500ea65c693ba3562673025a2e0386fabc54a7baa98183; Authorization=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJ1c2VySWQiOjExMjY5MTI5LCJzY2hJZCI6MTAwMjUsImV4cGlyZUF0IjoxNzExMDMzMDI0fQ.x6D0Hs4E5AJiB8C5-TYx5KZMowf1oG-0P78a5WsL6u7WKDe5MX6MPqfYnVJ-WYbnrGRdMjwNpbk0hGDWuedccBcq4ltAVSGQy_Dv69uLOR1kHjBo8qWaJ0_LBP2I9fC8c8-u6Nb9HT5RJtBas3hAXr9G78JrW5UdpWxzdCcbZkXqtwJtRrPBau-HVZl30A8DBS338gVnJ4A5u8v_oaKHGNi3dmO4vD44Vy2eDIWneI1UkFQu3ChOfDo2ZhgIewuXgJ_Ztz7UxfRe6YUcRVUQvCDn71nf49yef2nGDVwdgXjsQxCDTyC4Z1ECgUPffJuylIuS11dVQ3NMXQdhjtd19A; SERVERID=e3fa93b0fb9e2e6d4f53273540d4e924|1711025824|1711025820; Hm_lpvt_7ecd21a13263a714793f376c18038a87=1711025836"
-# cookie ="FROM_TYPE=weixin; v=5.5; Hm_lvt_7ecd21a13263a714793f376c18038a87=1710848937,1710863114,1710936424,1710997070; wechatSESS_ID=a586d48aa869fc4b5222a1e08452b8b4ea45b3a4f4da15d1; Authorization=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJ1c2VySWQiOjExMjY5MTI5LCJzY2hJZCI6MTAwMjUsImV4cGlyZUF0IjoxNzExMDE0NTU0fQ.k2GIKW7Rm97MRx-nP6P09n8hSIDUpF7rhEuSLOnm8GhRtOl0hiWS2A88NfiAEyU8TchgMDYyTdbKWK_SjCOufSgNL9eabUqU2C_Z0HuScKoOiO6Plq4aIbLE3KPuxHSlC_FqeG10viyhfx5jMqZ7EdLnn0-zQPQ_Ak8-KEIDZW9JuAiWmgP9cbCjJaYhhdtoXCr5oqwBa91HPkmrffxX6MT8DoWJPeCfMn3WVtgceD01fs1e07TjD4bkMX7H9TXvWkI-6r6LgpIjzq7Uvvxck_xj_RhKmsAqJ44N5bixRgA1m1x31_6XO-yz2ZTzdnz-qhXqvYQnDtYTCJST5UPLMQ; SERVERID=d3936289adfff6c3874a2579058ac651|1711007381|1711007087; Hm_lpvt_7ecd21a13263a714793f376c18038a87=1711007381"
-data_list = [
-
-    {
-        "lib_id": "10071",
-        "seat_key": "15,13."
-        #满
-    },
-    {
-        "lib_id": "10073",
-        "seat_key": "25,14."
-        #占
-    },
-    {
-        "lib_id": "10073",
-        "seat_key": "27,14."
-        #占
-    },
-    # {
-    #     "lib_id": "10073",
-    #     "seat_key": "27,14."
-    #     # 占
-    # },
-    {
-        "lib_id": "10073",
-        "seat_key": "25,13."
-        # 空
-    },
-]
 
 if __name__ == "__main__":
+    data_list = [
+
+        {
+            "lib_id": "10071",
+            "seat_key": "15,13."
+            # 满
+        },
+        {
+            "lib_id": "10073",
+            "seat_key": "25,14."
+            # 占
+        },
+        {
+            "lib_id": "10073",
+            "seat_key": "27,14."
+            # 占
+        },
+        # {
+        #     "lib_id": "10073",
+        #     "seat_key": "27,14."
+        #     # 占
+        # },
+        {
+            "lib_id": "10073",
+            "seat_key": "25,13."
+            # 空
+        },
+    ]
+    cookie = "FROM_TYPE=weixin; v=5.5; Hm_lvt_7ecd21a13263a714793f376c18038a87=1710848937,1710863114,1710936424,1710997070; wechatSESS_ID=e6500ea65c693ba3562673025a2e0386fabc54a7baa98183; Authorization=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJ1c2VySWQiOjExMjY5MTI5LCJzY2hJZCI6MTAwMjUsImV4cGlyZUF0IjoxNzExMDMzMDI0fQ.x6D0Hs4E5AJiB8C5-TYx5KZMowf1oG-0P78a5WsL6u7WKDe5MX6MPqfYnVJ-WYbnrGRdMjwNpbk0hGDWuedccBcq4ltAVSGQy_Dv69uLOR1kHjBo8qWaJ0_LBP2I9fC8c8-u6Nb9HT5RJtBas3hAXr9G78JrW5UdpWxzdCcbZkXqtwJtRrPBau-HVZl30A8DBS338gVnJ4A5u8v_oaKHGNi3dmO4vD44Vy2eDIWneI1UkFQu3ChOfDo2ZhgIewuXgJ_Ztz7UxfRe6YUcRVUQvCDn71nf49yef2nGDVwdgXjsQxCDTyC4Z1ECgUPffJuylIuS11dVQ3NMXQdhjtd19A; SERVERID=e3fa93b0fb9e2e6d4f53273540d4e924|1711025824|1711025820; Hm_lpvt_7ecd21a13263a714793f376c18038a87=1711025836"
     main_loop(cookie=cookie,data_list=data_list)
+
+
+
+

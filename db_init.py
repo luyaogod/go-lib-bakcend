@@ -2,8 +2,9 @@ from tortoise import Tortoise,run_async
 from models import Lib,Seat,User
 import json
 from settings import TORTOISE_ORM
-from utils.create_uuid import generate_uuid
 from settings import ADMIN_UUID,ADMIN_NAME
+from api_funcs.admin_func import create_user
+
 
 json_file_path = 'static/lib_and_id.json'
 with open(json_file_path, 'r', encoding='utf-8') as file:
@@ -33,15 +34,10 @@ async def insert_seat(libs):
                 else:
                     seat_name = int(item['name'])
                     sea_key = item['key'] + '.'
-                    # print(seat_name, sea_key)
                     await Seat.create(seat_id=seat_name, seat_key=sea_key, lib=lib)
             f.close()
 
 
-async def create_user(username):
-    username = username
-    uuid = generate_uuid()
-    await User.create(username=username,uuid=uuid)
 
 #test---
 
@@ -51,7 +47,15 @@ async def main():
     await Tortoise.generate_schemas()
     await insert_lib(data_lib_id)
     await insert_seat(libs)
-    await User.create(username = ADMIN_NAME,uuid=ADMIN_UUID)
+    await User.create(username=ADMIN_NAME, uuid=ADMIN_UUID, balance=9999)
+    await create_user(username="李世辉",balance=9999)
+    await create_user(username="李冰冰",balance=9999)
+    await create_user(username="赵泽萱",balance=9999)
+    await create_user(username="赵梓涵",balance=9999)
+    await create_user(username="黄欣",balance=9999)
+    await create_user(username="杨蝶",balance=9999)
+    await create_user(username="张益瑄",balance=9999)
+    await create_user(username="洪昊仁",balance=30)
 
 
 run_async(main())
