@@ -124,10 +124,10 @@ async def get_wechat_cookie(url:str):
 async def add_task_func(user,wx_url):
     if user.balance <= 0:
         return 0  # 用户余额不足
-    current_utc_time = datetime.now(timezone.utc)
-    result = time_validate(current_utc_time)
-    if not result:
-        return -1 #没到时间
+    # current_utc_time = datetime.now(timezone.utc)
+    # result = time_validate(current_utc_time)
+    # if not result:
+    #     return -1 #没到时间
     data = await user_all_seat(user)
     if not data:
         return -2 #未绑定座位
