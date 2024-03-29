@@ -135,9 +135,9 @@ async def add_task_func(user,wx_url):
     wx_cookie = await get_wechat_cookie(url=wx_url)
     if not wx_cookie:
         return -3 #微信令牌失效
-    set_time = get_set_time(current_utc_time)
-    data = add_task.apply_async(args=[wx_cookie, data], eta=set_time)
-    # data = add_task.delay(wx_cookie, data) #test
+    # set_time = get_set_time(current_utc_time)
+    # data = add_task.apply_async(args=[wx_cookie, data], eta=set_time)
+    data = add_task.delay(wx_cookie, data) #test
     user.balance -= 1
     await user.save()
     print('- 任务已添加:', data.id)
