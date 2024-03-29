@@ -10,6 +10,7 @@ class CreateTaskIn(BaseModel):
 
 class CreateUserIn(BaseModel):
     username:str
+    balance:int
 
 class SeatsListIn(BaseModel):
     seats: List[CreateSeatIn]
