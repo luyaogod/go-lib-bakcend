@@ -5,6 +5,7 @@ from settings import TORTOISE_ORM
 from utils.create_uuid import generate_uuid
 from settings import ADMIN_UUID,ADMIN_NAME
 
+
 json_file_path = 'static/lib_and_id.json'
 with open(json_file_path, 'r', encoding='utf-8') as file:
     data_lib_id = json.load(file)
@@ -33,7 +34,6 @@ async def insert_seat(libs):
                 else:
                     seat_name = int(item['name'])
                     sea_key = item['key'] + '.'
-                    # print(seat_name, sea_key)
                     await Seat.create(seat_id=seat_name, seat_key=sea_key, lib=lib)
             f.close()
 
@@ -51,7 +51,7 @@ async def main():
     await Tortoise.generate_schemas()
     await insert_lib(data_lib_id)
     await insert_seat(libs)
-    await User.create(username = ADMIN_NAME,uuid=ADMIN_UUID)
+    await User.create(username=ADMIN_NAME, uuid=ADMIN_UUID, balance=9999)
 
 
 run_async(main())

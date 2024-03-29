@@ -2,10 +2,18 @@ from models import User
 from utils.create_uuid import generate_uuid
 from settings import ADMIN_NAME
 
-async def create_user(username):
-    username = username
+async def create_user(username,balance):
     uuid = generate_uuid()
-    await User.create(username=username,uuid=uuid)
+    await User.create(username=username,balance=balance,uuid=uuid)
+
+async def update_user(user_id,username,balance):
+    user = await User.get_or_none(id = user_id)
+    if not user:
+        return False
+    user.username = username
+    user.balance = balance
+    await user.save()
+    return True
 
 async def delete_user(user_id):
     user = await User.get_or_none(id = user_id)

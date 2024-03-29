@@ -15,7 +15,7 @@ async def create_user(user=Depends(admin_auth_dependencie)):
 
 @router.post('/create_user/{uuid}',summary='用户创建')
 async def create_user(data:schemas.CreateUserIn,user=Depends(admin_auth_dependencie)):
-    await admin_func.create_user(data.username)
+    await admin_func.create_user(username=data.username,balance=data.balance)
     return success_response('创建成功')
 
 @router.get('/delete_user/{user_id}/{uuid}',summary='用户删除')
@@ -30,3 +30,11 @@ async def delete_user(user_id:int,user=Depends(admin_auth_dependencie)):
 async def all_user(user=Depends(admin_auth_dependencie)):
     result = await admin_func.get_all_user()
     return result
+
+@router.post('/update_user/{user_id}/{uuid}',summary='用户更新')
+async def update_user(user_id:int,data:schemas.CreateUserIn,user=Depends(admin_auth_dependencie)):
+    result = await admin_func.update_user(user_id=user_id,username=data.username,balance=data.balance)
+    if result:
+        return success_response('更新成功')
+    else:
+        return error_response('更新失败')

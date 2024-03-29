@@ -3,7 +3,7 @@ from utils.dependence import user_auth_dependencie
 from api_funcs import user_func
 from utils.response import success_response,error_response
 import schemas
-# from typing import List
+
 
 router = APIRouter()
 
@@ -45,21 +45,20 @@ async def delete_seat(seat_id:int,user=Depends(user_auth_dependencie)):
         return error_response('出错了！请稍后再试！')
 
 @router.post('/add_task/{uuid}',summary='增加任务')
-async def create_role_permission(data:schemas.CreateTaskIn,user=Depends(user_auth_dependencie)):
+async def add_task(data:schemas.CreateTaskIn,user=Depends(user_auth_dependencie)):
     wx_url = data.wx_url
-    result = await user_func.add_task_func(user,wx_url=wx_url)
+    result = await user_func.add_task_func(user=user,wx_url=wx_url)
+    if result == 1:
+        return success_response('抢座任务提交成功')
     if result == 0:
-        return success_response('任务添加成功')
+        return error_response("选座次数已耗尽，请联系管理员！")
     if result == -1:
-        return error_response('请先绑定座位')
-    if result == -3:
-        return error_response('微信身份链接已失效，请重新获取！')
+        return error_response("不在可提交时间段内！")
     if result == -2:
-        return error_response('出错了！请稍后再试')
-    if result == -4:
-        return error_response('不在提交时间范围内！')
-    else:
-        return error_response('出错了！请稍后再试！')
+        return error_response("出错了！请先绑定座位")
+    if result == -3:
+        return error_response("微信链接已失效，请重新复制！")
+    return error_response("出错了，任务添加失败！")
 
 @router.post('/update_seat_list/{uuid}',summary='更新座位列表')
 async def update_seat_list(data:schemas.SeatsListIn,user=Depends(user_auth_dependencie)):
@@ -67,5 +66,7 @@ async def update_seat_list(data:schemas.SeatsListIn,user=Depends(user_auth_depen
     data =  await user_func.update_user_seat_list(user,data_list)
     if data == 0:
         return success_response('保存成功')
-    else:
+    if data>0:
         return error_response(f'第{data}个座位不存在！')
+    if data<0:
+        return error_response(f'第{-data}个座位已经被别人绑定了！')
