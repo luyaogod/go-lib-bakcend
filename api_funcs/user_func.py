@@ -122,6 +122,12 @@ async def get_wechat_cookie(url:str):
 
 #func 提交任务
 async def add_task_func(user,wx_url):
+    current_time = datetime.now()
+    today = current_time.replace(hour=0, minute=0, second=0, microsecond=0)
+    if user.task is None:
+        pass
+    elif user.task.date() == today.date():
+        return -4 #重复提交任务
     if user.balance <= 0:
         return 0  # 用户余额不足
     current_utc_time = datetime.now(timezone.utc)
@@ -136,9 +142,10 @@ async def add_task_func(user,wx_url):
     if not wx_cookie:
         return -3 #微信令牌失效
     set_time = get_set_time(current_utc_time)
-    data = add_task.apply_async(args=[wx_cookie, data], eta=set_time)
-    # data = add_task.delay(wx_cookie, data) #test
+    # data = add_task.apply_async(args=[wx_cookie, data], eta=set_time)
+    data = add_task.delay(wx_cookie, data) #test
     user.balance -= 1
+    user.task = current_time
     await user.save()
     print('- 任务已添加:', data.id)
     return 1 #添加成功

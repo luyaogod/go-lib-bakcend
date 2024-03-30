@@ -37,8 +37,6 @@ async def insert_seat(libs):
                     await Seat.create(seat_id=seat_name, seat_key=sea_key, lib=lib)
             f.close()
 
-
-
 #test---
 
 
@@ -48,14 +46,15 @@ async def main():
     await insert_lib(data_lib_id)
     await insert_seat(libs)
     await User.create(username=ADMIN_NAME, uuid=ADMIN_UUID, balance=9999)
-    await create_user(username="李世辉",balance=9999)
-    await create_user(username="李冰冰",balance=9999)
-    await create_user(username="赵泽萱",balance=9999)
-    await create_user(username="赵梓涵",balance=9999)
-    await create_user(username="黄欣",balance=9999)
-    await create_user(username="杨蝶",balance=9999)
-    await create_user(username="张益瑄",balance=9999)
-    await create_user(username="洪昊仁",balance=30)
+    # await create_user(username="李世辉",balance=9999)
+    # await create_user(username="李冰冰",balance=9999)
+    # await create_user(username="赵泽萱",balance=9999)
+    # await create_user(username="赵梓涵",balance=9999)
+    # await create_user(username="黄欣",balance=9999)
+    # await create_user(username="杨蝶",balance=9999)
+    # await create_user(username="张益瑄",balance=9999)
+    # await create_user(username="洪昊仁",balance=30)
+
 
 
 run_async(main())
