@@ -39,7 +39,7 @@ ALLOWHOSTS = [
 BROKER_URL = 'redis://redis:6379/0' #存放结果
 BACKEND_URL = 'redis://redis:6379/1' #消息中间件
 
-USER_SEAT_SIZE = 4
+USER_SEAT_SIZE = 6
 
 ADMIN_NAME = 'mario'
 

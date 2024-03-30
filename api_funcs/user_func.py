@@ -2,7 +2,7 @@ from models import User,Seat,Lib
 from utils.get_cookie import get_wx_cookie
 from utils.time_tools import get_set_time,time_validate
 from my_celery import add_task
-from datetime import datetime, timedelta ,timezone
+from datetime import datetime,timezone
 from settings import USER_SEAT_SIZE
 
 
@@ -56,13 +56,14 @@ async def get_and_validate_seat_list(datalist,user:User):
         seat = await get_seat(lib_id=data['lib_id'], seat_name_id=data['seat_name_id'])
         if not seat:
             return count
-        users_on_seat = await User.filter(seats=seat)
-        users_on_seat_id_list = []
-        for i in users_on_seat:
-            users_on_seat_id_list.append(i.id)
-        if users_on_seat_id_list:
-            if not user.id in users_on_seat_id_list:
-                return -count
+        if count == 1:
+            users_on_seat = await User.filter(seats=seat)
+            users_on_seat_id_list = []
+            for i in users_on_seat:
+                users_on_seat_id_list.append(i.id)
+            if users_on_seat_id_list:
+                if not user.id in users_on_seat_id_list:
+                    return -count
         seat_list.append(seat)
         count += 1
     return seat_list
@@ -130,10 +131,10 @@ async def add_task_func(user,wx_url):
         return -4 #重复提交任务
     if user.balance <= 0:
         return 0  # 用户余额不足
-    # current_utc_time = datetime.now(timezone.utc)
-    # result = time_validate(current_utc_time)
-    # if not result:
-    #     return -1 #没到时间
+    current_utc_time = datetime.now(timezone.utc)
+    result = time_validate(current_utc_time)
+    if not result:
+        return -1 #没到时间
     data = await user_all_seat(user)
     if not data:
         return -2 #未绑定座位
@@ -141,9 +142,9 @@ async def add_task_func(user,wx_url):
     wx_cookie = await get_wechat_cookie(url=wx_url)
     if not wx_cookie:
         return -3 #微信令牌失效
-    # set_time = get_set_time(current_utc_time)
-    # data = add_task.apply_async(args=[wx_cookie, data], eta=set_time)
-    data = add_task.delay(wx_cookie, data) #test
+    set_time = get_set_time(current_utc_time)
+    data = add_task.apply_async(args=[wx_cookie, data], eta=set_time)
+    # data = add_task.delay(wx_cookie, data) #test
     user.balance -= 1
     user.task = current_time
     await user.save()
