@@ -130,10 +130,10 @@ async def add_task_func(user,wx_url):
         return -4 #重复提交任务
     if user.balance <= 0:
         return 0  # 用户余额不足
-    current_utc_time = datetime.now(timezone.utc)
-    result = time_validate(current_utc_time)
-    if not result:
-        return -1 #没到时间
+    # current_utc_time = datetime.now(timezone.utc)
+    # result = time_validate(current_utc_time)
+    # if not result:
+    #     return -1 #没到时间
     data = await user_all_seat(user)
     if not data:
         return -2 #未绑定座位
@@ -141,7 +141,7 @@ async def add_task_func(user,wx_url):
     wx_cookie = await get_wechat_cookie(url=wx_url)
     if not wx_cookie:
         return -3 #微信令牌失效
-    set_time = get_set_time(current_utc_time)
+    # set_time = get_set_time(current_utc_time)
     # data = add_task.apply_async(args=[wx_cookie, data], eta=set_time)
     data = add_task.delay(wx_cookie, data) #test
     user.balance -= 1
