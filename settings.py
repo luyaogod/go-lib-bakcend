@@ -4,8 +4,8 @@ TORTOISE_ORM = {
             'default': {
                 'engine': 'tortoise.backends.mysql',
                 'credentials': {
-                    'host': 'localhost',
-                    # 'host': 'db',
+                    # 'host': 'localhost',
+                    'host': 'db',
                     'port': '3306',
                     'user': 'root',
                     'password': 'maluyao123',
