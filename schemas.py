@@ -22,8 +22,8 @@ class SeatsListIn(BaseModel):
                     {"lib_id": 10073, "seat_name_id": 2},
                     {"lib_id": 10073, "seat_name_id": 3},
                     {"lib_id": 10073, "seat_name_id": 4},
-                    # {"lib_id": 10080, "seat_name_id": 608},
-                    # {"lib_id": 10080, "seat_name_id": 609},
+                    {"lib_id": 10073, "seat_name_id": 5},
+                    {"lib_id": 10073, "seat_name_id": 6},
                 ]
             }
         }
