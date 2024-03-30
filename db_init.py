@@ -48,12 +48,6 @@ async def main():
     await User.create(username=ADMIN_NAME, uuid=ADMIN_UUID, balance=9999)
     data = [
         {
-            "id": 1,
-            "username": "mario",
-            "uuid": "6f981e3e-73d4-4701-9296-28ffafc0e8eb",
-            "balance": 9998
-        },
-        {
             "id": 2,
             "username": "李世辉",
             "uuid": "8ee575c1-3cab-483e-bc2b-2d0061f7094d",
