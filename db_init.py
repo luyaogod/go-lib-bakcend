@@ -46,15 +46,94 @@ async def main():
     await insert_lib(data_lib_id)
     await insert_seat(libs)
     await User.create(username=ADMIN_NAME, uuid=ADMIN_UUID, balance=9999)
-    # await create_user(username="李世辉",balance=9999)
-    # await create_user(username="李冰冰",balance=9999)
-    # await create_user(username="赵泽萱",balance=9999)
-    # await create_user(username="赵梓涵",balance=9999)
-    # await create_user(username="黄欣",balance=9999)
-    # await create_user(username="杨蝶",balance=9999)
-    # await create_user(username="张益瑄",balance=9999)
-    # await create_user(username="洪昊仁",balance=30)
-
+    data = [
+        {
+            "id": 1,
+            "username": "mario",
+            "uuid": "6f981e3e-73d4-4701-9296-28ffafc0e8eb",
+            "balance": 9998
+        },
+        {
+            "id": 2,
+            "username": "李世辉",
+            "uuid": "8ee575c1-3cab-483e-bc2b-2d0061f7094d",
+            "balance": 9999
+        },
+        {
+            "id": 3,
+            "username": "李冰冰",
+            "uuid": "f3388810-9ee1-4559-991c-d4bf2a424813",
+            "balance": 9999
+        },
+        {
+            "id": 4,
+            "username": "赵泽萱",
+            "uuid": "7b4c71f4-4f8a-4ba0-b0ba-5ed8b3921cf0",
+            "balance": 9999
+        },
+        {
+            "id": 5,
+            "username": "赵梓涵",
+            "uuid": "cdacca01-7b6a-4f81-8b39-c3968d43de8a",
+            "balance": 9999
+        },
+        {
+            "id": 6,
+            "username": "黄欣",
+            "uuid": "8cc4a5e6-7b75-4bd4-8ed6-392728cadd01",
+            "balance": 9999
+        },
+        {
+            "id": 7,
+            "username": "杨蝶",
+            "uuid": "72850c7c-7eca-423b-b386-7c5f41cb164e",
+            "balance": 9998
+        },
+        {
+            "id": 8,
+            "username": "张益瑄",
+            "uuid": "b7e9abad-5981-4eed-b42a-847d03f95b08",
+            "balance": 9999
+        },
+        {
+            "id": 9,
+            "username": "洪昊仁",
+            "uuid": "4e35dc67-07cf-431e-810b-808407df16ef",
+            "balance": 30
+        },
+        {
+            "id": 10,
+            "username": "客户1",
+            "uuid": "0d25aa38-3bd3-4f68-8140-c26979994b9d",
+            "balance": 1
+        },
+        {
+            "id": 11,
+            "username": "王姿童",
+            "uuid": "1a7e7a53-e204-4dd7-9eb0-b8a7c373a161",
+            "balance": 1
+        },
+        {
+            "id": 13,
+            "username": "客户3",
+            "uuid": "4d69cb47-86bc-4473-ab26-44ebe699c1e8",
+            "balance": 1
+        },
+        {
+            "id": 14,
+            "username": "客户2",
+            "uuid": "0ca24344-d424-4fe1-95d1-4a22fb6d5e3a",
+            "balance": 1
+        },
+        {
+            "id": 15,
+            "username": "客户4",
+            "uuid": "4b149cc9-3ecc-4333-9998-940bedab4346",
+            "balance": 1
+        }
+    ]
+    for i in data:
+        await User.create(username=i['username'], uuid=i['uuid'], balance=9999)
 
 
 run_async(main())
