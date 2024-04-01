@@ -20,6 +20,7 @@ class User(Model):
     username = fields.CharField(max_length=40, description="用户名", unique=True)
     uuid = fields.UUIDField()
     balance = fields.IntField(description="次数余额")
+    task = fields.DatetimeField(description="任务时间",default=None,null=True)
     seats: fields.ManyToManyRelation[Seat]
 
 

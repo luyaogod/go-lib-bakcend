@@ -62,7 +62,8 @@ def ws(cookie):
             response = ws.recv()
         except WebSocketConnectionClosedException:
             print('[ws-except]:<连接主动关闭>')
-        print(f"- [ws]:{json.loads(response)}",)
+        if count == 0:
+            print(f"- [ws]:{json.loads(response)}",)
         if WS_SUCCESS_BOOK in response:
             print('- [ws]:<已选过座位>')
             return 2

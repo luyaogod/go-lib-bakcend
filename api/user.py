@@ -58,6 +58,8 @@ async def add_task(data:schemas.CreateTaskIn,user=Depends(user_auth_dependencie)
         return error_response("出错了！请先绑定座位")
     if result == -3:
         return error_response("微信链接已失效，请重新复制！")
+    if result == -4:
+        return error_response("您的任务已经提交成功了，请勿重复提交任务！")
     return error_response("出错了，任务添加失败！")
 
 @router.post('/update_seat_list/{uuid}',summary='更新座位列表')

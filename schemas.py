@@ -18,12 +18,12 @@ class SeatsListIn(BaseModel):
         json_schema_extra = {
             "example": {
                 "seats": [
-                    {"lib_id": 10080, "seat_name_id": 604},
-                    {"lib_id": 10080, "seat_name_id": 605},
-                    {"lib_id": 10080, "seat_name_id": 606},
-                    {"lib_id": 10080, "seat_name_id": 607},
-                    {"lib_id": 10080, "seat_name_id": 608},
-                    {"lib_id": 10080, "seat_name_id": 609},
+                    {"lib_id": 10073, "seat_name_id": 1},
+                    {"lib_id": 10073, "seat_name_id": 2},
+                    {"lib_id": 10073, "seat_name_id": 3},
+                    {"lib_id": 10073, "seat_name_id": 4},
+                    {"lib_id": 10073, "seat_name_id": 5},
+                    {"lib_id": 10073, "seat_name_id": 6},
                 ]
             }
         }
