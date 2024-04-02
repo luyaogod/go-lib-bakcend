@@ -61,7 +61,7 @@ async def main():
     while True:
         #任务拉取
         now = datetime.now()
-        get_data_time = datetime(now.year, now.month, now.day, 19, 28, 0)
+        get_data_time = datetime(now.year, now.month, now.day, 19, 58, 0)
         await sleep_to(get_data_time)
         print("[开始装载任务列表]",datetime.now())
         # await init() #数据库初始化，测试用的
@@ -73,7 +73,7 @@ async def main():
             print("[book_task-truck-error]:",e)
 
         #抢座程序
-        work_time = datetime(now.year, now.month, now.day, 19, 29, 0)
+        work_time = datetime(now.year, now.month, now.day, 20, 00, 0)
         await sleep_to(work_time)
         print("[开始运行抢座程序]",datetime.now())
         ret =  await tasks_worker(data_list)
