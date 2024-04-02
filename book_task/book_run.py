@@ -73,7 +73,7 @@ async def main():
             print("[book_task-truck-error]:",e)
 
         #抢座程序
-        work_time = datetime(now.year, now.month, now.day, 20, 00, 0)
+        work_time = datetime(now.year, now.month, now.day, 20, 0, 0)
         await sleep_to(work_time)
         print("[开始运行抢座程序]",datetime.now())
         ret =  await tasks_worker(data_list)
