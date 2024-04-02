@@ -7,17 +7,18 @@ from api import user,admin
 from tortoise.exceptions import OperationalError, DoesNotExist, IntegrityError, ValidationError
 from utils import exception
 from fastapi.middleware.cors import CORSMiddleware
+from book_task import register_book_task
 
 
 app = FastAPI()
 
 
-#router
+#路由
 app.include_router(user.router, prefix='/user', tags=['用户API'])
 app.include_router(admin.router, prefix='/admin', tags=['管理API'])
 
 
-# exception_handing
+#异常捕获
 app.add_exception_handler(HTTPException, exception.http_error_handler)
 app.add_exception_handler(RequestValidationError, exception.http422_error_handler)
 app.add_exception_handler(exception.UnicornException, exception.unicorn_exception_handler)
@@ -27,12 +28,15 @@ app.add_exception_handler(ValidationError, exception.mysql_validation_error)
 app.add_exception_handler(OperationalError, exception.mysql_operational_error)
 
 
-#db
-register_tortoise(
-    app=app,
-    config=TORTOISE_ORM
-)
+#注册数据库
+register_tortoise(app=app,config=TORTOISE_ORM)
 
+
+#注册后台事件
+register_book_task(app=app)
+
+
+#跨域
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWHOSTS,
@@ -40,6 +44,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 if __name__ == "__main__":
     # uvicorn.run('main:app', host='127.0.0.1', port=8000, reload=True, workers=1)

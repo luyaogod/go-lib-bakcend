@@ -1,4 +1,4 @@
-from models import User
+from models import User,Task
 from utils.create_uuid import generate_uuid
 from settings import ADMIN_NAME
 
@@ -35,4 +35,6 @@ async def get_all_user():
     except Exception:
         return []
     return users
+
+
 

@@ -1,10 +1,6 @@
 version: '3.8'
 
 services:
-  redis:
-    container_name: redis
-    image: redis:6.2-alpine
-
   db:
     image: mysql:8.0
     restart: always
@@ -28,19 +24,8 @@ services:
       - "8000:8000"
     depends_on:
       - db
-      - redis
 
-  
-  celery:
-    container_name: celery
-    build: .
-    command: bash -c "celery -A my_celery worker -l INFO"
-    volumes:
-      - .:/app
-    depends_on:
-      - db
-      - redis
-      - backend
+
 
 
   

@@ -3,6 +3,7 @@ from api_funcs import admin_func
 from utils.dependence import admin_auth_dependencie
 import schemas
 from utils.response import success_response,error_response
+from models import Task
 
 router = APIRouter()
 
@@ -38,3 +39,8 @@ async def update_user(user_id:int,data:schemas.CreateUserIn,user=Depends(admin_a
         return success_response('更新成功')
     else:
         return error_response('更新失败')
+
+@router.get('/all_tasks/{uuid}',summary='任务列表')
+async def all_tasks(user=Depends(admin_auth_dependencie)):
+    tasks =  await Task.all().values()
+    return tasks
