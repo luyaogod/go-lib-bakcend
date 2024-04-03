@@ -143,6 +143,7 @@ async def add_task_func(user,wx_url):
         return -3 #微信令牌失效
     if have_task:
         task.add_time = datetime.now()
+        task.status = 1
         task.wx_cookie = wx_cookie
         await task.save()
     else:
