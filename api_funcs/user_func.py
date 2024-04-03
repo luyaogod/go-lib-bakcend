@@ -132,7 +132,7 @@ async def add_task_func(user,wx_url):
     if user.balance <= 0:
         return 0  # 用户余额不足
     start_time = time(18,0,0)
-    end_time = time(19,50,00)
+    end_time = time(19,55,0)
     if not (start_time <= today.time() <= end_time):
         return -1 #没到时间
     user_seats = await user_all_seat(user)
