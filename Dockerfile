@@ -1,5 +1,6 @@
 FROM python:3.10.4
 ENV PYTHONNUNBUFFERED = 1
+ENV TZ=Asia/Shanghai
 WORKDIR /app
 COPY requirements.txt requirements.txt
 RUN pip3 config set global.index-url https://mirrors.aliyun.com/pypi/simple/
