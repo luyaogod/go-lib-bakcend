@@ -42,5 +42,5 @@ async def update_user(user_id:int,data:schemas.CreateUserIn,user=Depends(admin_a
 
 @router.get('/all_tasks/{uuid}',summary='任务列表')
 async def all_tasks(user=Depends(admin_auth_dependencie)):
-    tasks =  await Task.all().values()
-    return tasks
+    result =  await admin_func.get_all_task()
+    return result

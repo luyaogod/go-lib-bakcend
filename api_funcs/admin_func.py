@@ -36,5 +36,13 @@ async def get_all_user():
         return []
     return users
 
-
+async def get_all_task():
+    tasks = await Task.all().prefetch_related("user")
+    ret_list = []
+    for task in tasks:
+        task_dict = dict(task)
+        task_dict["username"] = task.user.username
+        task_dict.pop('wx_cookie',None)
+        ret_list.append(task_dict)
+    return ret_list
 
