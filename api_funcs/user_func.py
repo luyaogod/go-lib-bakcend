@@ -122,6 +122,7 @@ async def get_wechat_cookie(url:str):
 #func 提交任务
 async def add_task_func(user,wx_url):
     today = datetime.now()
+    print(today)
     task = await Task.get_or_none(user=user)
     have_task = False
     if task:
@@ -131,10 +132,10 @@ async def add_task_func(user,wx_url):
             return -4 #任务已提交
     if user.balance <= 0:
         return 0  # 用户余额不足
-    start_time = time(18,0,0)
-    end_time = time(19,55,0)
-    if not (start_time <= today.time() <= end_time):
-        return -1 #没到时间
+    # start_time = time(18,0,0)
+    # end_time = time(19,55,0)
+    # if not (start_time <= today.time() <= end_time):
+    #     return -1 #没到时间
     user_seats = await user_all_seat(user)
     if not user_seats:
         return -2 #未绑定座位
