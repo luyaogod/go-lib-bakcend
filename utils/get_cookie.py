@@ -33,7 +33,7 @@ async def get_wx_cookie(url):
     return cookie_string
 
 async def test():
-    url = "http://wechat.v2.traceint.com/index.php/graphql/?code=0817KsGa1nVj5H0qC8Ja1jMotd27KsGG&state=1"
+    url = "http://wechat.v2.traceint.com/index.php/graphql/?operationName=i&code=081VMSkl2mJOcd4kvWkl2rQlhV1VMSkg&state=1"
     data =  await get_wx_cookie(url)
     print(data)
 

@@ -3,7 +3,6 @@ from api_funcs import admin_func
 from utils.dependence import admin_auth_dependencie
 import schemas
 from utils.response import success_response,error_response
-from models import Task
 
 router = APIRouter()
 
@@ -23,7 +22,10 @@ async def create_user(data:schemas.CreateUserIn,user=Depends(admin_auth_dependen
 async def delete_user(user_id:int,user=Depends(admin_auth_dependencie)):
     result = await admin_func.delete_user(user_id=user_id)
     if result:
-        return success_response(f'删除成功-{result}')
+        if result == -100:
+            return error_response(f"不能删除管理员")
+        else:
+            return success_response(f'删除成功-{result}')
     else:
         return error_response('删除失败，用户不存在')
 

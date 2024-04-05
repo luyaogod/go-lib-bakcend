@@ -16,6 +16,8 @@ async def update_user(user_id,username,balance):
     return True
 
 async def delete_user(user_id):
+    if user_id == 1:
+        return -100
     user = await User.get_or_none(id = user_id)
     if user:
         if user.username == ADMIN_NAME:
