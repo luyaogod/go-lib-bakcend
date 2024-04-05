@@ -1,7 +1,7 @@
 from models import User,Seat,Lib,Task
 from utils.get_cookie import get_wx_cookie
 from datetime import datetime,time
-from settings import USER_SEAT_SIZE
+from settings import USER_SEAT_SIZE,BOOK_TASK_BEGIN,BOOK_TASK_END
 
 
 #tools 获取用户
@@ -112,11 +112,11 @@ async def user_all_seats_clean(data):
 async def get_wechat_cookie(url:str):
     try:
         cookie =  await get_wx_cookie(url)
-        if cookie and "Authorization" in cookie:
+        if "Authorization" in cookie:
             return cookie
         else:
             return None
-    except Exception as e:
+    except Exception :
         return None
 
 #func 提交任务
@@ -132,8 +132,8 @@ async def add_task_func(user,wx_url):
             return -4 #任务已提交
     if user.balance <= 0:
         return 0  # 用户余额不足
-    start_time = time(18,20,0)
-    end_time = time(19,55,0)
+    start_time = time(*BOOK_TASK_BEGIN)
+    end_time = time(*BOOK_TASK_END)
     if not (start_time <= today.time() <= end_time):
         return -1 #没到时间
     user_seats = await user_all_seat(user)
@@ -151,7 +151,6 @@ async def add_task_func(user,wx_url):
         await Task.create(add_time=today,wx_cookie=wx_cookie,user=user)
     user.balance -= 1
     await user.save()
-    print('- 任务已添加')
     return 1 #添加成功
 
 
