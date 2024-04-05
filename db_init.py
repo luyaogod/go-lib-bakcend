@@ -2,7 +2,7 @@ from tortoise import Tortoise,run_async
 from models import Lib,Seat,User
 from settings import TORTOISE_ORM
 from settings import ADMIN_UUID,ADMIN_NAME
-
+import json
 
 
 json_file_path = 'static/lib_and_id.json'
