@@ -1,7 +1,7 @@
 from models import User,Seat,Lib,Task
 from utils.get_cookie import get_wx_cookie
 from datetime import datetime,time
-from settings import USER_SEAT_SIZE,BOOK_TASK_BEGIN,BOOK_TASK_END
+from settings import USER_SEAT_SIZE,USER_ADD_TASK_BEGIN,USER_ADD_TASK_END
 
 
 #tools 获取用户
@@ -132,8 +132,8 @@ async def add_task_func(user,wx_url):
             return -4 #任务已提交
     if user.balance <= 0:
         return 0  # 用户余额不足
-    start_time = time(*BOOK_TASK_BEGIN)
-    end_time = time(*BOOK_TASK_END)
+    start_time = time(*USER_ADD_TASK_BEGIN)
+    end_time = time(*USER_ADD_TASK_END)
     if not (start_time <= today.time() <= end_time):
         return -1 #没到时间
     user_seats = await user_all_seat(user)

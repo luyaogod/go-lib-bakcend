@@ -1,17 +1,11 @@
 from book_task.book_func import book
 import asyncio
-from datetime import datetime, timedelta
+from datetime import datetime
 from models import User,Task
 from api_funcs.user_func import user_all_seat,user_all_seats_clean
-from settings import TORTOISE_ORM
+from settings import TORTOISE_ORM,BOOK_TASK_PULL,BOOK_TASK_CONNECT
 from tortoise import Tortoise
-
-async def sleep_to(target_time):
-    now = datetime.now()
-    if now > target_time:
-        target_time += timedelta(days=1)
-    remaining =  (target_time - now).total_seconds()
-    await asyncio.sleep(remaining)
+from utils.clock import sleep_to
 
 async def init():
     await Tortoise.init(
@@ -61,26 +55,28 @@ async def main():
     while True:
         #任务拉取
         now = datetime.now()
-        get_data_time = datetime(now.year, now.month, now.day, 19, 58, 0)
-        await sleep_to(get_data_time)
+        pull_time = datetime(now.year, now.month, now.day, *BOOK_TASK_PULL)
+        await sleep_to(pull_time)
         print("[开始装载任务列表]",datetime.now())
-        # await init() #数据库初始化，测试用的
+        # await init() #数据库初始化，测试用的!!!!!!
         try:
             data_list = await tasks_truck()
+            print(data_list)
         except Exception as e:
             data_list = []
             print("[book_task-truck-error]:",e)
 
-        #抢座程序
-        work_time = datetime(now.year, now.month, now.day, 20, 0, 0)
-        await sleep_to(work_time)
-        print("[开始运行抢座程序]",datetime.now())
+        #抢座tasks创建
+        connect_time = datetime(now.year, now.month, now.day, *BOOK_TASK_CONNECT)
+        await sleep_to(connect_time)
+        print("[开始连接WS]",datetime.now())
         ret =  await tasks_worker(data_list)
         print("[任务执行结果]:",ret)
 
         #更新数据库任务执行状态
         print("[更新数据库任务状态]",datetime.now())
         for r in ret:
+            print("[单任务状态]:",r)
             task = await Task.get_or_none(id = r["task_id"])
             if task:
                 if r["result"]:
@@ -89,7 +85,7 @@ async def main():
                     task.status = 3 #失败
                 await task.save()
         print("[今日任务结束]", datetime.now())
-        # await asyncio.sleep(30) #测试使用
+        # await asyncio.sleep(30) #测试使用!!!!!!
 
 if __name__ == "__main__":
     asyncio.run(main())

@@ -2,6 +2,8 @@ import aiohttp
 from aiohttp.client import ClientSession
 import asyncio
 from datetime import datetime
+from settings import BOOK_TASK_RUN
+from utils.clock import sleep_to
 
 WS_SLEEP = 0.5
 POST_SLEEP = 0.9
@@ -61,15 +63,22 @@ def json_for_book_seat(lib_id,seat_key):
     }
     return json
 
-async def ws(session:ClientSession,cookie,task_id):
+async def ws(session:ClientSession,cookie):
     headers =  await ws_headers(cookie)
     result = False
+    first_ws_time = ""
     async with session.ws_connect("wss://wechat.v2.traceint.com/ws?ns=prereserve/queue",headers=headers) as ws:
         count = 0
+        now = datetime.now()
+        print("[ws已连接]",datetime.now())
+
+        run_time = datetime(now.year, now.month, now.day, *BOOK_TASK_RUN)
+        await sleep_to(run_time)
+
         while count<WS_SIZE:
             await ws.send_str('{"ns":"prereserve/queue","msg":""}')
             if count == 0:
-                print(f"[ws发出-id{task_id}]",datetime.now())
+                first_ws_time = str(datetime.now())
             data =  await ws.receive()
             if data.type == aiohttp.WSMsgType.TEXT:
                 if count == 0:
@@ -92,7 +101,7 @@ async def ws(session:ClientSession,cookie,task_id):
         if count >= WS_SIZE:
             print("[ws]:<排队超时>")
         await ws.close()
-    return result
+    return {'status':result,"first_ws_time":first_ws_time}
 
 async def post(session:ClientSession,json,cookie,need_response:bool):
     headers = await post_headers(cookie)
@@ -109,8 +118,8 @@ async def post(session:ClientSession,json,cookie,need_response:bool):
 async def book(wx_cookie,seats,task_id,**kwargs):
     async with aiohttp.ClientSession() as session:
         result = False
-        ws_result =  await ws(cookie=wx_cookie,session=session,task_id=task_id)
-        if ws_result:
+        ws_result =  await ws(cookie=wx_cookie,session=session)
+        if ws_result["status"]:
             for i in  seats:
                 json1 = json_for_lib_list(lib_id=i["lib_id"])
                 json2 = json_for_book_seat(lib_id=i["lib_id"],seat_key=i["seat_key"])
@@ -122,4 +131,4 @@ async def book(wx_cookie,seats,task_id,**kwargs):
                     break
                 await asyncio.sleep(POST_SLEEP)
         await session.close()
-        return {"task_id":task_id,"result":result}
+        return {"task_id":task_id,"result":result,"first_ws_time":ws_result["first_ws_time"]}
