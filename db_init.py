@@ -126,11 +126,11 @@ async def main():
     for i in data:
         await User.create(username=i['username'], uuid=i['uuid'], balance=9999)
 
-    #测试
-    add_time = datetime.now()
-    wx_cookie = "Authorization=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJ1c2VySWQiOjExMjY5MTI5LCJzY2hJZCI6MTAwMjUsImV4cGlyZUF0IjoxNzEyNTUwOTYxfQ.up5CZjTaoX9WxGlx99hsGL4IyZxmzTucOlEQmCV6gSJY11D3ee0P1IZqYqop4zgiXbPaPfCTZnTngQAE21l42xso2w0PAXUQhXUOhSWjm1OAJAKKPEnzlb_Fy3u7xHyt8bi6xuo9oFens_4fDwQZF10SMaw5HbHQ7QWIkv9fCvw7xqBT6OrN_79qC6Q6BWupckG5IEqti-vinoaZciffzFGpgORzFfTOvVeATioX_6uE-oO2TNnJgXY_Qmhe1qHy0c5AD4jjAjUfHpH5z2kcAzYM8x1iyXaAMOF6UhyQCKAdsMiOppnD0Ey8pbbGJjzPEkk8aUtMlldKxEB74w_f7A; SERVERID=d3936289adfff6c3874a2579058ac651|1712543760|1712543760;"
-    user = await User.get_or_none(pk=1)
-    await Task.create(add_time=add_time,wx_cookie=wx_cookie,user=user)
+    # #测试
+    # add_time = datetime.now()
+    # wx_cookie = "Authorization=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJ1c2VySWQiOjExMjY5MTI5LCJzY2hJZCI6MTAwMjUsImV4cGlyZUF0IjoxNzEyNTUwOTYxfQ.up5CZjTaoX9WxGlx99hsGL4IyZxmzTucOlEQmCV6gSJY11D3ee0P1IZqYqop4zgiXbPaPfCTZnTngQAE21l42xso2w0PAXUQhXUOhSWjm1OAJAKKPEnzlb_Fy3u7xHyt8bi6xuo9oFens_4fDwQZF10SMaw5HbHQ7QWIkv9fCvw7xqBT6OrN_79qC6Q6BWupckG5IEqti-vinoaZciffzFGpgORzFfTOvVeATioX_6uE-oO2TNnJgXY_Qmhe1qHy0c5AD4jjAjUfHpH5z2kcAzYM8x1iyXaAMOF6UhyQCKAdsMiOppnD0Ey8pbbGJjzPEkk8aUtMlldKxEB74w_f7A; SERVERID=d3936289adfff6c3874a2579058ac651|1712543760|1712543760;"
+    # user = await User.get_or_none(pk=1)
+    # await Task.create(add_time=add_time,wx_cookie=wx_cookie,user=user)
 
 if __name__ == "__main__":
     run_async(main())
