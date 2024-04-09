@@ -70,13 +70,18 @@ async def ws(session:ClientSession,cookie):
     async with session.ws_connect("wss://wechat.v2.traceint.com/ws?ns=prereserve/queue",headers=headers) as ws:
         count = 0
         now = datetime.now()
-        print("[ws已连接]",datetime.now())
+        # print("[ws已连接]",datetime.now()) #测试输出
 
         run_time = datetime(now.year, now.month, now.day, *BOOK_TASK_RUN)
         await sleep_to(run_time)
 
         while count<WS_SIZE:
-            await ws.send_str('{"ns":"prereserve/queue","msg":""}')
+            try:
+                await ws.send_str('{"ns":"prereserve/queue","msg":""}')
+            except Exception as e:
+                print("[ws-send-error]",e)
+                await asyncio.sleep(0.5)
+                continue
             if count == 0:
                 first_ws_time = str(datetime.now())
             data =  await ws.receive()
@@ -108,8 +113,6 @@ async def post(session:ClientSession,json,cookie,need_response:bool):
     url = "https://wechat.v2.traceint.com/index.php/graphql/"
     async with session.post(url=url,headers=headers,json=json) as rep:
         if need_response == True:
-            rep_json = await rep.json()
-            print("[ws]:", rep_json)
             rep_detail = await rep.text()
             return rep_detail
         else:
@@ -126,9 +129,10 @@ async def book(wx_cookie,seats,task_id,**kwargs):
                 await post(session=session,json=json1,cookie=wx_cookie,need_response=False)
                 rep_text =  await post(session=session, json=json2, cookie=wx_cookie,need_response=True)
                 if "error" not in rep_text:
-                    print("[post]:<选座成功>")
+                    # print("[post]:<选座成功>")
                     result = True
                     break
+                print("[post]:",rep_text) #选座失败输出错误反馈
                 await asyncio.sleep(POST_SLEEP)
         await session.close()
         return {"task_id":task_id,"result":result,"first_ws_time":ws_result["first_ws_time"]}

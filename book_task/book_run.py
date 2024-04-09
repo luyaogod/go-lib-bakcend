@@ -61,7 +61,7 @@ async def main():
         # await init() #数据库初始化，测试用的!!!!!!
         try:
             data_list = await tasks_truck()
-            print(data_list)
+            # print(data_list) #测试输出
         except Exception as e:
             data_list = []
             print("[book_task-truck-error]:",e)
