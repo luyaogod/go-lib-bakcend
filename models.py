@@ -20,8 +20,16 @@ class User(Model):
     username = fields.CharField(max_length=40, description="用户名", unique=True)
     uuid = fields.UUIDField()
     balance = fields.IntField(description="次数余额")
-    task = fields.DatetimeField(description="任务时间",default=None,null=True)
     seats: fields.ManyToManyRelation[Seat]
+
+class Task(Model):
+    add_time = fields.DatetimeField(description="创建时间")
+    wx_cookie = fields.TextField(description='微信cookie')
+    user: fields.OneToOneRelation[User] = fields.OneToOneField(
+        "models.User", on_delete=fields.OnDelete.CASCADE, related_name="book_task"
+    )
+    status = fields.IntField(description='任务状态：1待执行 2执行成功 3执行失败',default=1)
+
 
 
 

@@ -1,4 +1,4 @@
-from pydantic import BaseModel,Field
+from pydantic import BaseModel
 from typing import List
 
 class CreateSeatIn(BaseModel):
@@ -15,15 +15,27 @@ class CreateUserIn(BaseModel):
 class SeatsListIn(BaseModel):
     seats: List[CreateSeatIn]
     class Config:
+        # json_schema_extra = {
+        #     "example": {
+        #         "seats": [
+        #             {"lib_id": 10073, "seat_name_id": 1},
+        #             {"lib_id": 10073, "seat_name_id": 2},
+        #             {"lib_id": 10073, "seat_name_id": 3},
+        #             {"lib_id": 10073, "seat_name_id": 4},
+        #             {"lib_id": 10073, "seat_name_id": 5},
+        #             {"lib_id": 10073, "seat_name_id": 6},
+        #         ]
+        #     }
+        # }
         json_schema_extra = {
             "example": {
                 "seats": [
-                    {"lib_id": 10073, "seat_name_id": 1},
-                    {"lib_id": 10073, "seat_name_id": 2},
-                    {"lib_id": 10073, "seat_name_id": 3},
-                    {"lib_id": 10073, "seat_name_id": 4},
-                    {"lib_id": 10073, "seat_name_id": 5},
-                    {"lib_id": 10073, "seat_name_id": 6},
+                    {"lib_id": 10072, "seat_name_id": 455},
+                    {"lib_id": 10072, "seat_name_id": 454},
+                    {"lib_id": 10072, "seat_name_id": 453},
+                    {"lib_id": 10072, "seat_name_id": 452},
+                    {"lib_id": 10072, "seat_name_id": 451},
+                    {"lib_id": 10072, "seat_name_id": 450},
                 ]
             }
         }

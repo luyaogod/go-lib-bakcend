@@ -1,4 +1,4 @@
-from models import User
+from models import User,Task
 from utils.create_uuid import generate_uuid
 from settings import ADMIN_NAME
 
@@ -16,6 +16,8 @@ async def update_user(user_id,username,balance):
     return True
 
 async def delete_user(user_id):
+    if user_id == 1:
+        return -100
     user = await User.get_or_none(id = user_id)
     if user:
         if user.username == ADMIN_NAME:
@@ -35,4 +37,14 @@ async def get_all_user():
     except Exception:
         return []
     return users
+
+async def get_all_task():
+    tasks = await Task.all().prefetch_related("user")
+    ret_list = []
+    for task in tasks:
+        task_dict = dict(task)
+        task_dict["username"] = task.user.username
+        task_dict.pop('wx_cookie',None)
+        ret_list.append(task_dict)
+    return ret_list
 

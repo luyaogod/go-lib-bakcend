@@ -1,9 +1,7 @@
-from models import User,Seat,Lib
+from models import User,Seat,Lib,Task
 from utils.get_cookie import get_wx_cookie
-from utils.time_tools import get_set_time,time_validate
-from my_celery import add_task
-from datetime import datetime,timezone
-from settings import USER_SEAT_SIZE
+from datetime import datetime,time
+from settings import USER_SEAT_SIZE,USER_ADD_TASK_BEGIN,USER_ADD_TASK_END
 
 
 #tools 获取用户
@@ -114,41 +112,45 @@ async def user_all_seats_clean(data):
 async def get_wechat_cookie(url:str):
     try:
         cookie =  await get_wx_cookie(url)
-        if cookie and "Authorization" in cookie:
+        if "Authorization" in cookie:
             return cookie
         else:
             return None
-    except Exception as e:
+    except Exception :
         return None
 
 #func 提交任务
 async def add_task_func(user,wx_url):
-    current_time = datetime.now()
-    today = current_time.replace(hour=0, minute=0, second=0, microsecond=0)
-    if user.task is None:
-        pass
-    elif user.task.date() == today.date():
-        return -4 #重复提交任务
+    today = datetime.now()
+    print(today)
+    task = await Task.get_or_none(user=user)
+    have_task = False
+    if task:
+        have_task = True
+        store_time =  task.add_time.date()
+        if store_time == today.date():
+            return -4 #任务已提交
     if user.balance <= 0:
         return 0  # 用户余额不足
-    current_utc_time = datetime.now(timezone.utc)
-    result = time_validate(current_utc_time)
-    if not result:
+    start_time = time(*USER_ADD_TASK_BEGIN)
+    end_time = time(*USER_ADD_TASK_END)
+    if not (start_time <= today.time() <= end_time):
         return -1 #没到时间
-    data = await user_all_seat(user)
-    if not data:
+    user_seats = await user_all_seat(user)
+    if not user_seats:
         return -2 #未绑定座位
-    data = await user_all_seats_clean(data)
     wx_cookie = await get_wechat_cookie(url=wx_url)
     if not wx_cookie:
         return -3 #微信令牌失效
-    set_time = get_set_time(current_utc_time)
-    data = add_task.apply_async(args=[wx_cookie, data], eta=set_time)
-    # data = add_task.delay(wx_cookie, data) #test
+    if have_task:
+        task.add_time = datetime.now()
+        task.status = 1
+        task.wx_cookie = wx_cookie
+        await task.save()
+    else:
+        await Task.create(add_time=today,wx_cookie=wx_cookie,user=user)
     user.balance -= 1
-    user.task = current_time
     await user.save()
-    print('- 任务已添加:', data.id)
     return 1 #添加成功
 
 

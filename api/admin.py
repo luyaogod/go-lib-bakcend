@@ -22,7 +22,10 @@ async def create_user(data:schemas.CreateUserIn,user=Depends(admin_auth_dependen
 async def delete_user(user_id:int,user=Depends(admin_auth_dependencie)):
     result = await admin_func.delete_user(user_id=user_id)
     if result:
-        return success_response(f'删除成功-{result}')
+        if result == -100:
+            return error_response(f"不能删除管理员")
+        else:
+            return success_response(f'删除成功-{result}')
     else:
         return error_response('删除失败，用户不存在')
 
@@ -38,3 +41,8 @@ async def update_user(user_id:int,data:schemas.CreateUserIn,user=Depends(admin_a
         return success_response('更新成功')
     else:
         return error_response('更新失败')
+
+@router.get('/all_tasks/{uuid}',summary='任务列表')
+async def all_tasks(user=Depends(admin_auth_dependencie)):
+    result =  await admin_func.get_all_task()
+    return result
