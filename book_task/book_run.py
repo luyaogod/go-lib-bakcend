@@ -71,12 +71,12 @@ async def main():
         await sleep_to(connect_time)
         print("[开始连接WS]",datetime.now())
         ret =  await tasks_worker(data_list)
-        print("[任务执行结果]:",ret)
+        # print("[任务执行结果]:",ret)
 
         #更新数据库任务执行状态
         print("[更新数据库任务状态]",datetime.now())
         for r in ret:
-            print("[单任务状态]:",r)
+            print("[任务状态]:",r)
             task = await Task.get_or_none(id = r["task_id"])
             if task:
                 if r["result"]:
