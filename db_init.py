@@ -47,7 +47,7 @@ async def main():
                 "id": 2,
                 "username": "李世辉",
                 "uuid": "8ee575c1-3cab-483e-bc2b-2d0061f7094d",
-                "balance": 9999
+                "balance": 9998
               },
               {
                 "id": 3,
@@ -59,19 +59,19 @@ async def main():
                 "id": 4,
                 "username": "赵泽萱",
                 "uuid": "7b4c71f4-4f8a-4ba0-b0ba-5ed8b3921cf0",
-                "balance": 9995
+                "balance": 9997
               },
               {
                 "id": 5,
                 "username": "赵梓涵",
                 "uuid": "cdacca01-7b6a-4f81-8b39-c3968d43de8a",
-                "balance": 9999
+                "balance": 9997
               },
               {
                 "id": 6,
                 "username": "黄欣",
                 "uuid": "8cc4a5e6-7b75-4bd4-8ed6-392728cadd01",
-                "balance": 9999
+                "balance": 9997
               },
               {
                 "id": 7,
@@ -101,7 +101,7 @@ async def main():
                 "id": 11,
                 "username": "王姿童",
                 "uuid": "1a7e7a53-e204-4dd7-9eb0-b8a7c373a161",
-                "balance": 9996
+                "balance": 9998
               },
               {
                 "id": 12,
@@ -113,7 +113,7 @@ async def main():
                 "id": 13,
                 "username": "客户2",
                 "uuid": "0ca24344-d424-4fe1-95d1-4a22fb6d5e3a",
-                "balance": 9997
+                "balance": 9998
               },
               {
                 "id": 14,
@@ -125,12 +125,66 @@ async def main():
                 "id": 15,
                 "username": "刘力菀",
                 "uuid": "081974bb-06cf-4e18-a3ea-7ca1ae3d90d1",
-                "balance": 9999
+                "balance": 9997
               },
               {
                 "id": 16,
                 "username": "客户5",
                 "uuid": "7c018e97-1a82-475e-8b20-77d37a7c512d",
+                "balance": 9997
+              },
+              {
+                "id": 17,
+                "username": "客户6",
+                "uuid": "1cae56d9-4fdb-4850-aec0-2e8d135ac360",
+                "balance": 9997
+              },
+              {
+                "id": 18,
+                "username": "客户7",
+                "uuid": "e3ebd448-2539-4521-8206-78f404e39ebf",
+                "balance": 9997
+              },
+              {
+                "id": 19,
+                "username": "客户8",
+                "uuid": "708d2a8f-f521-4dcc-b5e7-ee4c2f2f4977",
+                "balance": 9997
+              },
+              {
+                "id": 20,
+                "username": "客户9",
+                "uuid": "8468698d-5069-414b-be2d-fe17aec51ec9",
+                "balance": 9999
+              },
+              {
+                "id": 21,
+                "username": "施韵",
+                "uuid": "4862a048-a34f-4eb8-802c-979f3d1c38bf",
+                "balance": 9999
+              },
+              {
+                "id": 22,
+                "username": "客户10",
+                "uuid": "4732a691-96d2-4c0f-ab00-dc4ca761fcf0",
+                "balance": 9999
+              },
+              {
+                "id": 23,
+                "username": "客户11",
+                "uuid": "db889a77-bb24-41ef-8d4f-5de2158daad2",
+                "balance": 9998
+              },
+              {
+                "id": 24,
+                "username": "客户12",
+                "uuid": "f450f9fd-b0a4-409c-9ed3-9afae6f355fb",
+                "balance": 9998
+              },
+              {
+                "id": 27,
+                "username": "客户13",
+                "uuid": "e1f90841-8f6e-480c-9bb8-fae1f2f1c956",
                 "balance": 9999
               }
             ]

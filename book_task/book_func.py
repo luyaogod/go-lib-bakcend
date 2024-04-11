@@ -101,7 +101,7 @@ async def ws(session:ClientSession,cookie):
                 await asyncio.sleep(WS_SLEEP)
                 count += 1
             else:
-                print("[ws]:", "<data-type错误>:",data.type)
+                print("[ws]:","<data-type错误>:",data.type)
                 break
         if count >= WS_SIZE:
             print("[ws]:<排队超时>")
