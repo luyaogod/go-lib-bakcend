@@ -5,7 +5,7 @@ from datetime import datetime
 from settings import BOOK_TASK_RUN
 from utils.clock import sleep_to
 
-WS_SLEEP = 0.1
+WS_SLEEP = 0.5
 POST_SLEEP = 0.9
 WS_SIZE = 120
 UA = "Mozilla/5.0 (Linux; Android 10; TAS-AL00 Build/HUAWEITAS-AL00; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/107.0.5304.141 Mobile Safari/537.36 XWEB/5043 MMWEBSDK/20221109 MMWEBID/6856 MicroMessenger/8.0.31.2281(0x28001F59) WeChat/arm64 Weixin NetType/WIFI Language/zh_CN ABI/arm64"
@@ -86,8 +86,8 @@ async def ws(session:ClientSession,cookie):
                 first_ws_time = str(datetime.now())
             data =  await ws.receive()
             if data.type == aiohttp.WSMsgType.TEXT:
-                # if count == 0:
-                print( "[ws]:",data.json())  #测试输出
+                if count == 0:
+                    print( "[ws]:",data.json())  #测试输出
                 if data.data == WS_ERROR_FAIL_COOKIE:
                     print("[ws]:","<wx-cookie失效>")
                     break
