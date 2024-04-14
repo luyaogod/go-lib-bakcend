@@ -3,7 +3,7 @@ import asyncio
 from datetime import datetime
 from models import User,Task
 from api_funcs.user_func import user_all_seat,user_all_seats_clean
-from settings import TORTOISE_ORM,BOOK_TASK_PULL,BOOK_TASK_CONNECT
+from settings import TORTOISE_ORM,BOOK_TASK_PULL,BOOK_TASK_CONNECT,BOOK_TASK_CONNECT_ADJUST
 from tortoise import Tortoise
 from utils.clock import sleep_to
 
@@ -68,7 +68,7 @@ async def main():
 
         #抢座tasks创建
         connect_time = datetime(now.year, now.month, now.day, *BOOK_TASK_CONNECT)
-        await sleep_to(connect_time)
+        await sleep_to(connect_time,BOOK_TASK_CONNECT_ADJUST)
         print("[开始连接WS]",datetime.now())
         ret =  await tasks_worker(data_list)
         # print("[任务执行结果]:",ret)

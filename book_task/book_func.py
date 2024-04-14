@@ -2,10 +2,10 @@ import aiohttp
 from aiohttp.client import ClientSession
 import asyncio
 from datetime import datetime
-from settings import BOOK_TASK_RUN
+from settings import BOOK_TASK_RUN,WS_RECONNECT_TIMES
 from utils.clock import sleep_to
 
-WS_SLEEP = 0.5
+WS_SLEEP = 0.1
 POST_SLEEP = 0.9
 WS_SIZE = 120
 UA = "Mozilla/5.0 (Linux; Android 10; TAS-AL00 Build/HUAWEITAS-AL00; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/107.0.5304.141 Mobile Safari/537.36 XWEB/5043 MMWEBSDK/20221109 MMWEBID/6856 MicroMessenger/8.0.31.2281(0x28001F59) WeChat/arm64 Weixin NetType/WIFI Language/zh_CN ABI/arm64"
@@ -67,45 +67,64 @@ async def ws(session:ClientSession,cookie):
     headers =  await ws_headers(cookie)
     result = False
     first_ws_time = ""
-    async with session.ws_connect("wss://wechat.v2.traceint.com/ws?ns=prereserve/queue",headers=headers) as ws:
-        count = 0
-        now = datetime.now()
-        # print("[ws已连接]",datetime.now()) #测试输出
+    wrap_count = 0
 
-        run_time = datetime(now.year, now.month, now.day, *BOOK_TASK_RUN)
-        await sleep_to(run_time)
+    while wrap_count < WS_RECONNECT_TIMES:
+        out = True
 
-        while count<WS_SIZE:
-            try:
-                await ws.send_str('{"ns":"prereserve/queue","msg":""}')
-            except Exception as e:
-                print("[ws-send-error]",e)
-                await asyncio.sleep(0.5)
-                continue
-            if count == 0:
-                first_ws_time = str(datetime.now())
-            data =  await ws.receive()
-            if data.type == aiohttp.WSMsgType.TEXT:
+        async with session.ws_connect("wss://wechat.v2.traceint.com/ws?ns=prereserve/queue",headers=headers) as ws:
+
+            now = datetime.now()
+            # print("[ws已连接]",datetime.now()) #测试输出
+            if wrap_count == 0:
+                run_time = datetime(now.year, now.month, now.day, *BOOK_TASK_RUN)
+                await sleep_to(run_time)
+
+            count = 0
+            while count<WS_SIZE:
+                try:
+                    await ws.send_str('{"ns":"prereserve/queue","msg":""}')
+                except Exception as e:
+                    print("[ws-send-error]",e)
+                    await asyncio.sleep(0.5)
+                    continue
                 if count == 0:
-                    print( "[ws]:",data.json())  #测试输出
-                if data.data == WS_ERROR_FAIL_COOKIE:
-                    print("[ws]:","<wx-cookie失效>")
+                    first_ws_time = str(datetime.now())
+                data =  await ws.receive()
+                if data.type == aiohttp.WSMsgType.TEXT:
+                    if count == 0:
+                        print( "[ws]:",data.json())  #测试输出
+                    if data.data == WS_ERROR_FAIL_COOKIE:
+                        print("[ws]:","<wx-cookie失效>")
+                        break
+                    if data.data == WS_SUCCESS_QUEUE:
+                        print("[ws]:", "<排队成功>")
+                        result = True
+                        break
+                    if WS_SUCCESS_BOOK in data.data :
+                        print("[ws]:", "<已预约座位>")
+                        break
+                    await asyncio.sleep(WS_SLEEP)
+                elif data.type == aiohttp.WSMsgType.CLOSED:
+                    print("[ws-error]:ws断开重连")
+                    out = False
                     break
-                if data.data == WS_SUCCESS_QUEUE:
-                    print("[ws]:", "<排队成功>")
-                    result = True
+                else:
+                    print("[ws-error]:",data.type)
+                    result = False
                     break
-                if WS_SUCCESS_BOOK in data.data :
-                    print("[ws]:", "<已预约座位>")
-                    break
-                await asyncio.sleep(WS_SLEEP)
-                count += 1
-            else:
-                print("[ws]:","<data-type错误>:",data.type)
-                break
-        if count >= WS_SIZE:
-            print("[ws]:<排队超时>")
-        await ws.close()
+
+            if count >= WS_SIZE:
+                print("[ws]:<排队超时>")
+            await ws.close()
+
+        if out == True:
+            break
+        wrap_count += 1
+
+    if wrap_count == 2:
+        print("[ws]:<多次连接被断开>")
+        result = False
     return {'status':result,"first_ws_time":first_ws_time}
 
 async def post(session:ClientSession,json,cookie,need_response:bool):

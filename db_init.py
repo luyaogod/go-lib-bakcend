@@ -187,7 +187,67 @@ async def main():
                 "username": "客户13",
                 "uuid": "e1f90841-8f6e-480c-9bb8-fae1f2f1c956",
                 "balance": 9999
-              }
+              },
+             {
+                 "id": 26,
+                 "username": "客户14",
+                 "uuid": "5f0a3545-8f81-4511-b0ac-a91bd39418a7",
+                 "balance": 9997
+             },
+             {
+                 "id": 27,
+                 "username": "客户15",
+                 "uuid": "60874674-2193-4e08-b084-1abbc131d7f6",
+                 "balance": 9998
+             },
+             {
+                 "id": 28,
+                 "username": "客户16",
+                 "uuid": "76b350f8-1437-4be3-89e1-0d8441145534",
+                 "balance": 9999
+             },
+             {
+                 "id": 29,
+                 "username": "客户17",
+                 "uuid": "1dddbccb-45d7-448f-9a47-83dc1be3c2bd",
+                 "balance": 9998
+             },
+             {
+                 "id": 30,
+                 "username": "客户18",
+                 "uuid": "043ffe61-63ae-41e1-8ccf-3369f6912654",
+                 "balance": 9999
+             },
+             {
+                 "id": 31,
+                 "username": "客户19",
+                 "uuid": "afeb3c89-ea12-420c-b54a-8503ecd0df8e",
+                 "balance": 9998
+             },
+             {
+                 "id": 32,
+                 "username": "客户20",
+                 "uuid": "49e1104e-dc9e-49c6-abed-d31ebf3b1170",
+                 "balance": 9998
+             },
+             {
+                 "id": 33,
+                 "username": "黄欣室友",
+                 "uuid": "05d413c0-2f9d-404d-93de-334c0d921a50",
+                 "balance": 9999
+             },
+             {
+                 "id": 34,
+                 "username": "客户21",
+                 "uuid": "1cdd6e33-11ca-48d9-8d50-7d329d8bb557",
+                 "balance": 9999
+             },
+             {
+                 "id": 35,
+                 "username": "客户22",
+                 "uuid": "70840bd8-47a3-4fb6-a226-73614081b4fa",
+                 "balance": 9999
+             }
             ]
     for i in data:
         await User.create(username=i['username'], uuid=i['uuid'], balance=9999)
