@@ -13,32 +13,32 @@ async def init():
     )
 
 async def tasks_truck():
-    today = datetime.now().date()
     task_list = []
     tasks = await Task.all()
     for i in tasks:
-        if not (i.add_time.date() == today):
-            continue #不是今天的任务
+        if (i.status == 0):
+            continue  # 任务为关闭状态
+        if (i.status == 4):
+            continue  # 失效cookie
+        user = await User.get_or_none(id=i.user_id)
+        if user == None:
+            continue  # 用户不存在
+
         task_item = {}
         task_item['task_id'] = i.id
         task_item['wx_cookie'] = i.wx_cookie
-        user = await User.get_or_none(id=i.user_id)
-        if not user:
-            continue
-        else:
-            data = await user_all_seat(user)
-            if data:
-                clean_data = await user_all_seats_clean(data)
-            else:
-                # 用户没保存座位
-                no_seat_task = await Task.get_or_none(user=user)
-                if no_seat_task:
-                    no_seat_task.status = 3  # 设置状态为任务失败
-                    await no_seat_task.save()
-                continue
-            task_item['seats'] = clean_data
+
+        data = await user_all_seat(user)
+        if data == None:
+            continue # 用户无座位
+        task_item['seats'] = await user_all_seats_clean(data)
         task_list.append(task_item)
+        i.add_time = datetime.now()
+        i.status = 1 #设置为待执行状态
+        await i.save()
+
     return task_list
+
 
 async def tasks_worker(data_list):
     tasks = []
@@ -81,6 +81,9 @@ async def main():
             if task:
                 if r["result"]:
                     task.status = 2 #成功
+                    user = await User.get_or_none(pk=task.user_id)
+                    user.balance -= 1
+                    await user.save()
                 else:
                     task.status = 3 #失败
                 await task.save()

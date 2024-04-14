@@ -1,3 +1,5 @@
+import asyncio
+
 #TORTOISE_ORM数据库配置
 TORTOISE_ORM = {
         'connections': {
@@ -54,3 +56,5 @@ BOOK_TASK_RUN = [20,0,0]
 
 WS_RECONNECT_TIMES = 2
 
+#全局队列
+QUEUE = asyncio.Queue()
