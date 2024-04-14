@@ -247,7 +247,13 @@ async def main():
                  "username": "客户22",
                  "uuid": "70840bd8-47a3-4fb6-a226-73614081b4fa",
                  "balance": 9999
-             }
+             },
+            {
+                "id": 36,
+                "username": "客户23",
+                "uuid": "b6181614-f9ac-4806-b11f-88c3b630252e",
+                "balance": 9999
+            }
             ]
     for i in data:
         await User.create(username=i['username'], uuid=i['uuid'], balance=9999)

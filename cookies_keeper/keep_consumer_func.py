@@ -35,11 +35,11 @@ async def keeper(user_id,queue=None):
         update_cookie = False
         while True:
             async with session.post("http://wechat.v2.traceint.com/index.php/graphql/", data=data) as rep:
-                print("[请求完成]:",datetime.now())
+                # print("[请求完成]:",datetime.now())
                 rep_text = await rep.text()
 
                 if "errors" in rep_text:
-                    print("[cookie失效]:task_id:",task.id)
+                    print("[cookie失效]:task_id:",task.id,'-',datetime.now())
                     task.status = 4
                     await task.save()
                     queue.task_done()

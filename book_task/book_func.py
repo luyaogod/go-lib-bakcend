@@ -105,6 +105,7 @@ async def ws(session:ClientSession,cookie):
                         print("[ws]:", "<已预约座位>")
                         break
                     await asyncio.sleep(WS_SLEEP)
+                    count += 1
                 elif data.type == aiohttp.WSMsgType.CLOSED:
                     print("[ws-error]:ws断开重连")
                     out = False
