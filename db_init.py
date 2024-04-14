@@ -261,7 +261,7 @@ async def main():
     for vip in vips:
         user = await User.get_or_none(username=vip)
         if user:
-            await Task.create(add_time=add_time, wx_cookie=wx_cookie, user=user, status=2)
+            await Task.create(add_time=add_time, wx_cookie=wx_cookie, user=user, status=4)
         else:
             print("用户不存在")
 
