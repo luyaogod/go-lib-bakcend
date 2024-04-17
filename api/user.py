@@ -44,23 +44,23 @@ async def delete_seat(seat_id:int,user=Depends(user_auth_dependencie)):
     else:
         return error_response('出错了！请稍后再试！')
 
-@router.post('/add_task/{uuid}',summary='增加任务')
-async def add_task(data:schemas.CreateTaskIn,user=Depends(user_auth_dependencie)):
-    wx_url = data.wx_url
-    result = await user_func.add_task_func(user=user,wx_url=wx_url)
-    if result == 1:
-        return success_response('抢座任务提交成功')
-    if result == 0:
-        return error_response("选座次数已耗尽，请联系管理员！")
-    if result == -1:
-        return error_response("不在可提交时间段内！")
-    if result == -2:
-        return error_response("出错了！请先绑定座位")
-    if result == -3:
-        return error_response("微信链接已失效，请重新复制！")
-    if result == -4:
-        return error_response("您的任务已经提交成功了，请勿重复提交任务！")
-    return error_response("出错了，任务添加失败！")
+# @router.post('/add_task/{uuid}',summary='增加任务')
+# async def add_task(data:schemas.CreateTaskIn,user=Depends(user_auth_dependencie)):
+#     wx_url = data.wx_url
+#     result = await user_func.add_task_func(user=user,wx_url=wx_url)
+#     if result == 1:
+#         return success_response('抢座任务提交成功')
+#     if result == 0:
+#         return error_response("选座次数已耗尽，请联系管理员！")
+#     if result == -1:
+#         return error_response("不在可提交时间段内！")
+#     if result == -2:
+#         return error_response("出错了！请先绑定座位")
+#     if result == -3:
+#         return error_response("微信链接已失效，请重新复制！")
+#     if result == -4:
+#         return error_response("您的任务已经提交成功了，请勿重复提交任务！")
+#     return error_response("出错了，任务添加失败！")
 
 @router.post('/update_seat_list/{uuid}',summary='更新座位列表')
 async def update_seat_list(data:schemas.SeatsListIn,user=Depends(user_auth_dependencie)):

@@ -1,6 +1,7 @@
-from models import User,Task
+from models import User,Task,Task_Ret
 from utils.create_uuid import generate_uuid
 from settings import ADMIN_NAME
+from datetime import datetime,timedelta
 
 async def create_user(username,balance):
     uuid = generate_uuid()
@@ -47,4 +48,16 @@ async def get_all_task():
         task_dict.pop('wx_cookie',None)
         ret_list.append(task_dict)
     return ret_list
+
+async def task_ret(offset:int):
+    #offset为0为当日，每+1减一天
+    now = datetime.now().date()
+    interval = timedelta(days=offset)
+    ret = await Task_Ret.filter(time=now-interval).all().order_by('-time').prefetch_related('user')
+    rep_data = []
+    for i in ret:
+        dataItem = dict(i)
+        dataItem['username'] = i.user.username
+        rep_data.append(dataItem)
+    return rep_data
 

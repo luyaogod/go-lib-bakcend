@@ -121,39 +121,40 @@ async def get_wechat_cookie(url:str):
         return None
 
 #func 提交任务
-async def add_task_func(user,wx_url):
-    today = datetime.now()
-    print(today)
-    task = await Task.get_or_none(user=user)
-    have_task = False
-    if task:
-        have_task = True
-        store_time =  task.add_time.date()
-        if store_time == today.date():
-            return -4 #任务已提交
-    if user.balance <= 0:
-        return 0  # 用户余额不足
-    start_time = time(*USER_ADD_TASK_BEGIN)
-    end_time = time(*USER_ADD_TASK_END)
-    if not (start_time <= today.time() <= end_time):
-        return -1 #没到时间
-    user_seats = await user_all_seat(user)
-    if not user_seats:
-        return -2 #未绑定座位
-    wx_cookie = await get_wechat_cookie(url=wx_url)
-    if not wx_cookie:
-        return -3 #微信令牌失效
-    if have_task:
-        task.add_time = datetime.now()
-        task.status = 1
-        task.wx_cookie = wx_cookie
-        await task.save()
-    else:
-        await Task.create(add_time=today,wx_cookie=wx_cookie,user=user)
-    user.balance -= 1
-    await user.save()
-    return 1 #添加成功
+# async def add_task_func(user,wx_url):
+#     today = datetime.now()
+#     print(today)
+#     task = await Task.get_or_none(user=user)
+#     have_task = False
+#     if task:
+#         have_task = True
+#         store_time =  task.add_time.date()
+#         if store_time == today.date():
+#             return -4 #任务已提交
+#     if user.balance <= 0:
+#         return 0  # 用户余额不足
+#     start_time = time(*USER_ADD_TASK_BEGIN)
+#     end_time = time(*USER_ADD_TASK_END)
+#     if not (start_time <= today.time() <= end_time):
+#         return -1 #没到时间
+#     user_seats = await user_all_seat(user)
+#     if not user_seats:
+#         return -2 #未绑定座位
+#     wx_cookie = await get_wechat_cookie(url=wx_url)
+#     if not wx_cookie:
+#         return -3 #微信令牌失效
+#     if have_task:
+#         task.add_time = datetime.now()
+#         task.status = 1
+#         task.wx_cookie = wx_cookie
+#         await task.save()
+#     else:
+#         await Task.create(add_time=today,wx_cookie=wx_cookie,user=user)
+#     user.balance -= 1
+#     await user.save()
+#     return 1 #添加成功
 
+#func-保存cookie
 async def save_cookie(user,wx_url):
     if user.balance <= 0:
         return 0  # 用户余额不足
@@ -177,7 +178,7 @@ async def save_cookie(user,wx_url):
     else:
         today = datetime.now()
         await Task.create(add_time=today, wx_cookie=wx_cookie, user=user)
-    print("[测试-user-id]",user.id)
+    # print("[测试-user-id]",user.id)
     await QUEUE.put(user.id)
     return 1 #添加成功
 

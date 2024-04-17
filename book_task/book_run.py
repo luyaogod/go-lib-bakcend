@@ -1,7 +1,7 @@
 from book_task.book_func import book
 import asyncio
 from datetime import datetime
-from models import User,Task
+from models import User,Task,Task_Ret
 from api_funcs.user_func import user_all_seat,user_all_seats_clean
 from settings import TORTOISE_ORM,BOOK_TASK_PULL,BOOK_TASK_CONNECT,BOOK_TASK_CONNECT_ADJUST
 from tortoise import Tortoise
@@ -33,9 +33,6 @@ async def tasks_truck():
             continue # 用户无座位
         task_item['seats'] = await user_all_seats_clean(data)
         task_list.append(task_item)
-        i.add_time = datetime.now()
-        i.status = 1 #设置为待执行状态
-        await i.save()
 
     return task_list
 
@@ -79,14 +76,15 @@ async def main():
             print("[任务状态]:",r)
             task = await Task.get_or_none(id = r["task_id"])
             if task:
+                user = await User.get_or_none(pk=task.user_id)
                 if r["result"]:
-                    task.status = 2 #成功
-                    user = await User.get_or_none(pk=task.user_id)
+                    #任务成功
+                    await Task_Ret.create(user=user, time=datetime.now().date(), status=1)
                     user.balance -= 1
                     await user.save()
                 else:
-                    task.status = 3 #失败
-                await task.save()
+                    #任务失败
+                    await Task_Ret.create(user=user, time=datetime.now().date(), status=0)
         print("[今日任务结束]", datetime.now())
         # await asyncio.sleep(30) #测试使用!!!!!!
 
