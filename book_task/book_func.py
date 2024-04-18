@@ -67,65 +67,45 @@ async def ws(session:ClientSession,cookie):
     headers =  await ws_headers(cookie)
     result = False
     first_ws_time = ""
-    wrap_count = 0
+    async with session.ws_connect("wss://wechat.v2.traceint.com/ws?ns=prereserve/queue",headers=headers) as ws:
+        count = 0
+        now = datetime.now()
+        # print("[ws已连接]",datetime.now()) #测试输出
 
-    while wrap_count < WS_RECONNECT_TIMES:
-        out = True
+        run_time = datetime(now.year, now.month, now.day, *BOOK_TASK_RUN)
+        await sleep_to(run_time)
 
-        async with session.ws_connect("wss://wechat.v2.traceint.com/ws?ns=prereserve/queue",headers=headers) as ws:
-
-            now = datetime.now()
-            # print("[ws已连接]",datetime.now()) #测试输出
-            if wrap_count == 0:
-                run_time = datetime(now.year, now.month, now.day, *BOOK_TASK_RUN)
-                await sleep_to(run_time)
-
-            count = 0
-            while count<WS_SIZE:
-                try:
-                    await ws.send_str('{"ns":"prereserve/queue","msg":""}')
-                except Exception as e:
-                    print("[ws-send-error]",e)
-                    await asyncio.sleep(0.5)
-                    continue
+        while count<WS_SIZE:
+            try:
+                await ws.send_str('{"ns":"prereserve/queue","msg":""}')
+            except Exception as e:
+                print("[ws-send-error]",e)
+                await asyncio.sleep(0.5)
+                continue
+            if count == 0:
+                first_ws_time = str(datetime.now())
+            data =  await ws.receive()
+            if data.type == aiohttp.WSMsgType.TEXT:
                 if count == 0:
-                    first_ws_time = str(datetime.now())
-                data =  await ws.receive()
-                if data.type == aiohttp.WSMsgType.TEXT:
-                    if count == 0:
-                        print( "[ws]:",data.json())  #测试输出
-                    if data.data == WS_ERROR_FAIL_COOKIE:
-                        print("[ws]:","<wx-cookie失效>")
-                        break
-                    if data.data == WS_SUCCESS_QUEUE:
-                        print("[ws]:", "<排队成功>")
-                        result = True
-                        break
-                    if WS_SUCCESS_BOOK in data.data :
-                        print("[ws]:", "<已预约座位>")
-                        break
-                    await asyncio.sleep(WS_SLEEP)
-                    count += 1
-                elif data.type == aiohttp.WSMsgType.CLOSED:
-                    print("[ws-error]:ws断开重连")
-                    out = False
+                    print( "[ws]:",data.json())
+                if data.data == WS_ERROR_FAIL_COOKIE:
+                    print("[ws]:","<wx-cookie失效>")
                     break
-                else:
-                    print("[ws-error]:",data.type)
-                    result = False
+                if data.data == WS_SUCCESS_QUEUE:
+                    print("[ws]:", "<排队成功>")
+                    result = True
                     break
-
-            if count >= WS_SIZE:
-                print("[ws]:<排队超时>")
-            await ws.close()
-
-        if out == True:
-            break
-        wrap_count += 1
-
-    if wrap_count == 2:
-        print("[ws]:<多次连接被断开>")
-        result = False
+                if WS_SUCCESS_BOOK in data.data :
+                    print("[ws]:", "<已预约座位>")
+                    break
+                await asyncio.sleep(WS_SLEEP)
+                count += 1
+            else:
+                print("[ws]:","<data-type错误>:",data.type)
+                break
+        if count >= WS_SIZE:
+            print("[ws]:<排队超时>")
+        await ws.close()
     return {'status':result,"first_ws_time":first_ws_time}
 
 async def post(session:ClientSession,json,cookie,need_response:bool):

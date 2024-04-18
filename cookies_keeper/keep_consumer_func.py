@@ -63,28 +63,29 @@ async def keeper(user_id,queue=None):
                     queue.task_done()
                     break
 
-                print(f"[keeper]:用户{user_id}-cookie有效", datetime.now())
+                # print(f"[keeper]:用户{user_id}-cookie有效", datetime.now())
 
                 rep_header = rep.headers.getall(hdrs.SET_COOKIE) #检查响应头
 
                 if update_cookie == True:
                     req_header = rep.request_info.headers.get('Cookie')
-                    print(f'[keeper]:用户{user_id}-cookie更新-taskID={task.id}-{datetime.now()}-{ req_header}')
+                    # print(f'[keeper]:用户{user_id}-cookie更新-taskID={task.id}-{datetime.now()}-{ req_header}')
+                    print(f'[keeper]:用户{user_id}-cookie更新')
                     task.wx_cookie = req_header
                     await task.save()
 
                 is_find_Authorization = False
                 for i in rep_header:
                     if "Authorization=" in i:
-                        print("[keeper]:find-Set-Cookie:Authorization")
+                        # print("[keeper]:find-Set-Cookie:Authorization")
                         is_find_Authorization = True
 
                 if  is_find_Authorization == True:
                     update_cookie = True
                     sleep_time = 3600 + 3000
                     continue
-            print('[keeper]:sleep-', sleep_time)
-            print("-------------------------------------------")
+            # print('[keeper]:sleep-', sleep_time)
+            # print("-------------------------------------------")
             await asyncio.sleep(sleep_time)
             update_cookie = False
             sleep_time = 60
