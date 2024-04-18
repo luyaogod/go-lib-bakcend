@@ -32,8 +32,8 @@ class Task(Model):
 
 class Task_Ret(Model):
     time = fields.DateField(description="创建时间")
-    user: fields.OneToOneRelation[User] = fields.OneToOneField(
-        "models.User", on_delete=fields.OnDelete.CASCADE, related_name="task_rets"
+    user: fields.ForeignKeyRelation[User] = fields.ForeignKeyField(
+        "models.User", related_name="task_rets"
     )
     status = fields.IntField(description='任务执行结果：0失败 1成功')
 
