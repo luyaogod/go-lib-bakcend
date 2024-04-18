@@ -2,10 +2,10 @@ import aiohttp
 from aiohttp.client import ClientSession
 import asyncio
 from datetime import datetime
-from settings import BOOK_TASK_RUN
+from settings import BOOK_TASK_RUN,WS_RECONNECT_TIMES
 from utils.clock import sleep_to
 
-WS_SLEEP = 0.5
+WS_SLEEP = 0.1
 POST_SLEEP = 0.9
 WS_SIZE = 120
 UA = "Mozilla/5.0 (Linux; Android 10; TAS-AL00 Build/HUAWEITAS-AL00; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/107.0.5304.141 Mobile Safari/537.36 XWEB/5043 MMWEBSDK/20221109 MMWEBID/6856 MicroMessenger/8.0.31.2281(0x28001F59) WeChat/arm64 Weixin NetType/WIFI Language/zh_CN ABI/arm64"

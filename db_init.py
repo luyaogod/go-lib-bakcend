@@ -1,8 +1,9 @@
 from tortoise import Tortoise,run_async
-from models import Lib,Seat,User,Task
+from models import Lib,Seat,User,Task,Task_Ret
 from settings import TORTOISE_ORM
 from settings import ADMIN_UUID,ADMIN_NAME
 import json
+from datetime import datetime,timedelta
 
 json_file_path = 'static/lib_and_id.json'
 with open(json_file_path, 'r', encoding='utf-8') as file:
@@ -35,6 +36,18 @@ async def insert_seat(libs):
             f.close()
 
 #test---
+async def task_ret(offset:int):
+    #offest为0为当日，每+1减一天
+    now = datetime.now().date()
+    interval = timedelta(days=offset)
+    ret = await Task_Ret.filter(time=now-interval).all().order_by('-time').prefetch_related('user')
+    rep_data = []
+    for i in ret:
+        dataItem = dict(i)
+        dataItem['username'] = i.user.username
+        rep_data.append(dataItem)
+    return rep_data
+
 
 async def main():
     await init()
@@ -186,16 +199,90 @@ async def main():
                 "username": "客户13",
                 "uuid": "e1f90841-8f6e-480c-9bb8-fae1f2f1c956",
                 "balance": 9999
-              }
+              },
+             {
+                 "id": 26,
+                 "username": "客户14",
+                 "uuid": "5f0a3545-8f81-4511-b0ac-a91bd39418a7",
+                 "balance": 9997
+             },
+             {
+                 "id": 27,
+                 "username": "客户15",
+                 "uuid": "60874674-2193-4e08-b084-1abbc131d7f6",
+                 "balance": 9998
+             },
+             {
+                 "id": 28,
+                 "username": "客户16",
+                 "uuid": "76b350f8-1437-4be3-89e1-0d8441145534",
+                 "balance": 9999
+             },
+             {
+                 "id": 29,
+                 "username": "客户17",
+                 "uuid": "1dddbccb-45d7-448f-9a47-83dc1be3c2bd",
+                 "balance": 9998
+             },
+             {
+                 "id": 30,
+                 "username": "客户18",
+                 "uuid": "043ffe61-63ae-41e1-8ccf-3369f6912654",
+                 "balance": 9999
+             },
+             {
+                 "id": 31,
+                 "username": "客户19",
+                 "uuid": "afeb3c89-ea12-420c-b54a-8503ecd0df8e",
+                 "balance": 9998
+             },
+             {
+                 "id": 32,
+                 "username": "客户20",
+                 "uuid": "49e1104e-dc9e-49c6-abed-d31ebf3b1170",
+                 "balance": 9998
+             },
+             {
+                 "id": 33,
+                 "username": "黄欣室友",
+                 "uuid": "05d413c0-2f9d-404d-93de-334c0d921a50",
+                 "balance": 9999
+             },
+             {
+                 "id": 34,
+                 "username": "客户21",
+                 "uuid": "1cdd6e33-11ca-48d9-8d50-7d329d8bb557",
+                 "balance": 9999
+             },
+             {
+                 "id": 35,
+                 "username": "客户22",
+                 "uuid": "70840bd8-47a3-4fb6-a226-73614081b4fa",
+                 "balance": 9999
+             },
+            {
+                "id": 36,
+                "username": "客户23",
+                "uuid": "b6181614-f9ac-4806-b11f-88c3b630252e",
+                "balance": 9999
+            }
             ]
     for i in data:
         await User.create(username=i['username'], uuid=i['uuid'], balance=9999)
 
-    # #测试
-    # add_time = datetime.now()
-    # wx_cookie = "Authorization=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJ1c2VySWQiOjExMjY5MTI5LCJzY2hJZCI6MTAwMjUsImV4cGlyZUF0IjoxNzEyNTUwOTYxfQ.up5CZjTaoX9WxGlx99hsGL4IyZxmzTucOlEQmCV6gSJY11D3ee0P1IZqYqop4zgiXbPaPfCTZnTngQAE21l42xso2w0PAXUQhXUOhSWjm1OAJAKKPEnzlb_Fy3u7xHyt8bi6xuo9oFens_4fDwQZF10SMaw5HbHQ7QWIkv9fCvw7xqBT6OrN_79qC6Q6BWupckG5IEqti-vinoaZciffzFGpgORzFfTOvVeATioX_6uE-oO2TNnJgXY_Qmhe1qHy0c5AD4jjAjUfHpH5z2kcAzYM8x1iyXaAMOF6UhyQCKAdsMiOppnD0Ey8pbbGJjzPEkk8aUtMlldKxEB74w_f7A; SERVERID=d3936289adfff6c3874a2579058ac651|1712543760|1712543760;"
-    # user = await User.get_or_none(pk=1)
-    # await Task.create(add_time=add_time,wx_cookie=wx_cookie,user=user)
+    #测试
+    now = datetime.now()
+    now -= timedelta(days=1)
+    add_time = datetime(now.year, now.month, now.day,8,0,0)
+    wx_cookie = ""
+    vips = [ADMIN_NAME,"李世辉","黄欣","杨蝶","赵梓涵","刘力菀","李冰冰","赵泽萱"]
+    for vip in vips:
+        user = await User.get_or_none(username=vip)
+        if user:
+            await Task.create(add_time=add_time, wx_cookie=wx_cookie, user=user, status=4)
+        else:
+            print("用户不存在")
+
 
 if __name__ == "__main__":
     run_async(main())

@@ -36,7 +36,7 @@ async def get_wx_cookie(url)->str:
 
 if __name__ == '__main__':
     async def get():
-        url = "http://wechat.v2.traceint.com/index.php/graphql/?operationName=i&code=041dkkFa1jBleH0bOuFa1FQxDq1dkkFl&state=1"
+        url = "http://wechat.v2.traceint.com/index.php/graphql/?operationName=i&code=0411fIkl2EiVgd45LHol21r9jr01fIkt&state=1"
         data = await get_wx_cookie(url)
         print(data)
     asyncio.run(get())
