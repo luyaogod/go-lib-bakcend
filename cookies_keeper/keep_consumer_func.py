@@ -47,7 +47,7 @@ async def keeper(user_id,queue=None):
             check_user =  await  User.get_or_none(id=user_id)
             if (check_user.balance <=0 ):
                 print(f'[keeper]:用户-{user_id}余额不足')
-                task.status = 4
+                task.status = 0
                 await task.save()
                 queue.task_done()
                 break
@@ -58,7 +58,7 @@ async def keeper(user_id,queue=None):
 
                 if "errors" in rep_text:
                     print(f'[keeper]:用户{user_id}cookie失效，taskID={task.id},{datetime.now()}')
-                    task.status = 4
+                    task.status = 0
                     await task.save()
                     queue.task_done()
                     break

@@ -28,7 +28,8 @@ class Task(Model):
     user: fields.OneToOneRelation[User] = fields.OneToOneField(
         "models.User", on_delete=fields.OnDelete.CASCADE, related_name="book_task"
     )
-    status = fields.IntField(description='wx_cookie：0关闭 1有效 4失效', default=1)
+    status = fields.IntField(description='wx_cookie：0失效 1有效', default=1)
+    open = fields.BooleanField(description='关闭、开启',default=True)
 
 class Task_Ret(Model):
     time = fields.DateField(description="创建时间")

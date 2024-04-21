@@ -36,17 +36,6 @@ async def insert_seat(libs):
             f.close()
 
 #test---
-async def task_ret(offset:int):
-    #offest为0为当日，每+1减一天
-    now = datetime.now().date()
-    interval = timedelta(days=offset)
-    ret = await Task_Ret.filter(time=now-interval).all().order_by('-time').prefetch_related('user')
-    rep_data = []
-    for i in ret:
-        dataItem = dict(i)
-        dataItem['username'] = i.user.username
-        rep_data.append(dataItem)
-    return rep_data
 
 
 async def main():
@@ -279,7 +268,7 @@ async def main():
     for vip in vips:
         user = await User.get_or_none(username=vip)
         if user:
-            await Task.create(add_time=add_time, wx_cookie=wx_cookie, user=user, status=4)
+            await Task.create(add_time=add_time, wx_cookie=wx_cookie, user=user, status=0)
         else:
             print("用户不存在")
 

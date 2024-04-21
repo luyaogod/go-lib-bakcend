@@ -44,9 +44,6 @@ ADMIN_NAME = 'mario'
 
 ADMIN_UUID = '6f981e3e-73d4-4701-9296-28ffafc0e8eb'
 
-#任务提交接口时间限制
-USER_ADD_TASK_BEGIN = [18,20,0]
-USER_ADD_TASK_END = [19,55,0]
 
 #后台抢座任务时间控制
 BOOK_TASK_PULL = [19,59,40]
@@ -54,7 +51,6 @@ BOOK_TASK_CONNECT = [19,59,58]
 BOOK_TASK_CONNECT_ADJUST = 0
 BOOK_TASK_RUN = [20,0,0]
 
-WS_RECONNECT_TIMES = 2
 
 #全局队列
 QUEUE = asyncio.Queue()

@@ -12,17 +12,19 @@ async def init():
         config=TORTOISE_ORM
     )
 
-async def tasks_truck():
+async def pull_tasks():
     task_list = []
     tasks = await Task.all()
     for i in tasks:
-        if (i.status == 0):
+        if (i.open == False):
             continue  # 任务为关闭状态
-        if (i.status == 4):
+        if (i.status == 0):
             continue  # 失效cookie
         user = await User.get_or_none(id=i.user_id)
         if user == None:
             continue  # 用户不存在
+        if user.balance<=0:
+            continue #用户余额不足
 
         task_item = {}
         task_item['task_id'] = i.id
@@ -57,7 +59,7 @@ async def main():
         print("[开始装载任务列表]",datetime.now())
         # await init() #数据库初始化，测试用的!!!!!!
         try:
-            data_list = await tasks_truck()
+            data_list = await pull_tasks()
             # print(data_list) #测试输出
         except Exception as e:
             data_list = []
