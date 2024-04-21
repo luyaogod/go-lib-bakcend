@@ -5,6 +5,7 @@ import asyncio
 from models import Task,User
 
 async def keeper(user_id,queue=None):
+    #前置校验
     user = await  User.get_or_none(id=user_id)
     if user == None:
         print(f'[keeper]:用户-{user_id}不存在')
@@ -52,40 +53,40 @@ async def keeper(user_id,queue=None):
                 queue.task_done()
                 break
 
+            #发送请求
             async with session.post("http://wechat.v2.traceint.com/index.php/graphql/", data=data) as rep:
-                # print("[请求完成]:",datetime.now())
                 rep_text = await rep.text()
 
+                #校验cookie是否失效
                 if "errors" in rep_text:
                     print(f'[keeper]:用户{user_id}cookie失效，taskID={task.id},{datetime.now()}')
-                    task.status = 0
-                    await task.save()
+                    update_task = await Task.get_or_none(user_id=user_id)
+                    update_task.status = 0
+                    await update_task.save()
                     queue.task_done()
                     break
 
-                # print(f"[keeper]:用户{user_id}-cookie有效", datetime.now())
-
-                rep_header = rep.headers.getall(hdrs.SET_COOKIE) #检查响应头
+                # 获取响应头
+                rep_header = rep.headers.getall(hdrs.SET_COOKIE)
 
                 if update_cookie == True:
                     req_header = rep.request_info.headers.get('Cookie')
-                    # print(f'[keeper]:用户{user_id}-cookie更新-taskID={task.id}-{datetime.now()}-{ req_header}')
                     print(f'[keeper]:用户{user_id}-cookie更新')
-                    task.wx_cookie = req_header
-                    await task.save()
+                    update_task = await Task.get_or_none(user_id=user_id)
+                    update_task.wx_cookie = req_header
+                    await update_task.save()
 
+                #校验cookie是否更新
                 is_find_Authorization = False
                 for i in rep_header:
                     if "Authorization=" in i:
-                        # print("[keeper]:find-Set-Cookie:Authorization")
                         is_find_Authorization = True
 
                 if  is_find_Authorization == True:
                     update_cookie = True
                     sleep_time = 3600 + 3000
                     continue
-            # print('[keeper]:sleep-', sleep_time)
-            # print("-------------------------------------------")
+
             await asyncio.sleep(sleep_time)
             update_cookie = False
             sleep_time = 60
