@@ -46,6 +46,8 @@ async def delete_seat(seat_id:int,user=Depends(user_auth_dependencie)):
 
 @router.post('/update_seat_list/{uuid}',summary='更新座位列表')
 async def update_seat_list(data:schemas.SeatsListIn,user=Depends(user_auth_dependencie)):
+    if user.balance <= 0:
+        return error_response('您的余额不足请联系管理员')
     data_list = data.model_dump()['seats']
     data =  await user_func.update_user_seat_list(user,data_list)
     if data == 0:
