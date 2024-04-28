@@ -51,7 +51,9 @@ async def tasks_worker(data_list):
     return ret
 
 async def main(host,worker_size,worker_id):
-    print('[BOOKER启动]')
+    for i in range(10):
+        print('[BOOKER启动]')
+        await asyncio.sleep(5)
     worker_size = int(worker_size)
     worker_id = int(worker_id)
 

@@ -8,6 +8,9 @@ docker pyhton3 db_init.py
 ```bash
 docker build -t booker .
 
-docker run -it --rm --name mybooker0 \
+docker run -d --name mybooker0 --restart unless-stopped \
 booker bash -c "python3 book_main.py 127.0.0.1 2 0"
+
+docker run -d --name mybooker0 booker \
+bash -c "python3 book_main.py 127.0.0.1 2 0"
 ```

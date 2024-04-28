@@ -6,7 +6,7 @@ from settings import TIME_BOOK_GO
 from utils.clock import sleep_to
 
 WS_SLEEP = 0.1
-POST_SLEEP = 1
+POST_SLEEP = 0.9
 WS_SIZE = 1000
 UA = "Mozilla/5.0 (Linux; Android 10; TAS-AL00 Build/HUAWEITAS-AL00; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/107.0.5304.141 Mobile Safari/537.36 XWEB/5043 MMWEBSDK/20221109 MMWEBID/6856 MicroMessenger/8.0.31.2281(0x28001F59) WeChat/arm64 Weixin NetType/WIFI Language/zh_CN ABI/arm64"
 WS_SUCCESS_QUEUE = r'{"ns":"prereserve\/queue","msg":"\u6392\u961f\u6210\u529f\uff01\u8bf7\u57282\u5206\u949f\u5185\u9009\u62e9\u5ea7\u4f4d\uff0c\u5426\u5219\u9700\u8981\u91cd\u65b0\u6392\u961f\u3002","code":0,"data":0}'
@@ -86,8 +86,8 @@ async def ws(session:ClientSession,cookie):
                 first_ws_time = str(datetime.now())
             data =  await ws.receive()
             if data.type == aiohttp.WSMsgType.TEXT:
-                # if count == 0:
-                print( "[ws]:",data.json())
+                if count == 0:
+                    print( "[ws]:",data.json())
                 if data.data == WS_ERROR_FAIL_COOKIE:
                     print("[ws]:","<wx-cookie失效>")
                     break
