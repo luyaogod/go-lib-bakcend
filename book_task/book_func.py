@@ -2,7 +2,7 @@ import aiohttp
 from aiohttp.client import ClientSession
 import asyncio
 from datetime import datetime
-from settings import BOOK_TASK_RUN,WS_RECONNECT_TIMES
+from settings import BOOK_TASK_RUN
 from utils.clock import sleep_to
 
 WS_SLEEP = 0.1

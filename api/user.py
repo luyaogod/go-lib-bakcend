@@ -44,26 +44,10 @@ async def delete_seat(seat_id:int,user=Depends(user_auth_dependencie)):
     else:
         return error_response('出错了！请稍后再试！')
 
-# @router.post('/add_task/{uuid}',summary='增加任务')
-# async def add_task(data:schemas.CreateTaskIn,user=Depends(user_auth_dependencie)):
-#     wx_url = data.wx_url
-#     result = await user_func.add_task_func(user=user,wx_url=wx_url)
-#     if result == 1:
-#         return success_response('抢座任务提交成功')
-#     if result == 0:
-#         return error_response("选座次数已耗尽，请联系管理员！")
-#     if result == -1:
-#         return error_response("不在可提交时间段内！")
-#     if result == -2:
-#         return error_response("出错了！请先绑定座位")
-#     if result == -3:
-#         return error_response("微信链接已失效，请重新复制！")
-#     if result == -4:
-#         return error_response("您的任务已经提交成功了，请勿重复提交任务！")
-#     return error_response("出错了，任务添加失败！")
-
 @router.post('/update_seat_list/{uuid}',summary='更新座位列表')
 async def update_seat_list(data:schemas.SeatsListIn,user=Depends(user_auth_dependencie)):
+    if user.balance <= 0:
+        return error_response('您的余额不足请联系管理员')
     data_list = data.model_dump()['seats']
     data =  await user_func.update_user_seat_list(user,data_list)
     if data == 0:
@@ -94,14 +78,11 @@ async def user_task(user=Depends(user_auth_dependencie)):
     task = await Task.get_or_none(user=user).values()
     return task
 
-@router.get('/user_task/switch_status/{uuid}',summary='用户任务')
+@router.get('/user_task/switch_status/{uuid}',summary='任务开启关闭')
 async def switch_status(user=Depends(user_auth_dependencie)):
     task = await Task.get_or_none(user=user)
-    if (task.status == 4):
-        return error_response("连接已失效请重新获取！")
-    if (task.status != 0):
-        task.status = 0
-    else:
-        task.status = 1
+    if not task:
+        return error_response('任务不存在！')
+    task.open = not task.open
     await task.save()
     return success_response('状态切换成功！')
