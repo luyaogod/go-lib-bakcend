@@ -38,6 +38,8 @@ class Task_Ret(Model):
     )
     status = fields.IntField(description='任务执行结果：0失败 1成功')
 
-
-
+class Task_Pool(Model):
+    task: fields.OneToOneRelation[Task] = fields.OneToOneField(
+        "models.Task", on_delete=fields.OnDelete.CASCADE, related_name="task_pool"
+    )
 

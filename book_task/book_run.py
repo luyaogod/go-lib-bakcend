@@ -1,43 +1,43 @@
 from book_task.book_func import book
 import asyncio
 from datetime import datetime
-from models import User,Task,Task_Ret
+from models import User,Task,Task_Ret,Task_Pool
 from api_funcs.user_func import user_all_seat,user_all_seats_clean
-from settings import TORTOISE_ORM,BOOK_TASK_PULL,BOOK_TASK_CONNECT,BOOK_TASK_CONNECT_ADJUST
+from settings import orm_conf,TIME_PULL_TASK_FROM_POOL,TIME_WS_CONNECT
 from tortoise import Tortoise
 from utils.clock import sleep_to
 
-async def init():
+async def init(host):
     await Tortoise.init(
-        config=TORTOISE_ORM
+        config=orm_conf(host)
     )
 
-async def pull_tasks():
+async def pull_tasks(workers_size,worker_id):
     task_list = []
-    tasks = await Task.all()
-    for i in tasks:
-        if (i.open == False):
-            continue  # 任务为关闭状态
-        if (i.status == 0):
-            continue  # 失效cookie
-        user = await User.get_or_none(id=i.user_id)
-        if user == None:
-            continue  # 用户不存在
-        if user.balance<=0:
-            continue #用户余额不足
-
+    #从池中获取任务
+    data_list = await Task_Pool.all().prefetch_related('task')
+    for data in data_list:
+        i = data.task
         task_item = {}
         task_item['task_id'] = i.id
         task_item['wx_cookie'] = i.wx_cookie
-
-        data = await user_all_seat(user)
-        if data == None:
-            continue # 用户无座位
-        task_item['seats'] = await user_all_seats_clean(data)
-        task_list.append(task_item)
-
-    return task_list
-
+        task_item['user_id'] = i.user_id
+        user = await User.get_or_none(id=i.user_id)
+        if user == None:
+            task_item['seats'] = []
+        else:
+            data = await user_all_seat(user)
+            if data == None:
+                task_item['seats'] = []
+            else:
+                task_item['seats'] = await user_all_seats_clean(data)
+                task_list.append(task_item)
+    #负载均衡任务分配
+    distributed_tasks = []
+    for i in range(len(task_list)):
+        if i % workers_size == worker_id:
+            distributed_tasks.append(task_list[i])
+    return distributed_tasks
 
 async def tasks_worker(data_list):
     tasks = []
@@ -50,27 +50,31 @@ async def tasks_worker(data_list):
         ret = await asyncio.gather(*tasks)
     return ret
 
-async def main():
+async def main(host,worker_size,worker_id):
+    print('[BOOKER启动]')
+    worker_size = int(worker_size)
+    worker_id = int(worker_id)
+
     while True:
-        #任务拉取
+        # 任务拉取和分配
         now = datetime.now()
-        pull_time = datetime(now.year, now.month, now.day, *BOOK_TASK_PULL)
+        pull_time = datetime(now.year, now.month, now.day, *TIME_PULL_TASK_FROM_POOL)
         await sleep_to(pull_time)
         print("[开始装载任务列表]",datetime.now())
-        # await init() #数据库初始化，测试用的!!!!!!
+        await init(host)
         try:
-            data_list = await pull_tasks()
+            data_list = await pull_tasks(worker_size,worker_id)
             # print(data_list) #测试输出
         except Exception as e:
             data_list = []
             print("[book_task-truck-error]:",e)
+        # print(data_list)
 
         #抢座tasks创建
-        connect_time = datetime(now.year, now.month, now.day, *BOOK_TASK_CONNECT)
-        await sleep_to(connect_time,BOOK_TASK_CONNECT_ADJUST)
+        connect_time = datetime(now.year, now.month, now.day, *TIME_WS_CONNECT)
+        await sleep_to(connect_time)
         print("[开始连接WS]",datetime.now())
         ret =  await tasks_worker(data_list)
-        # print("[任务执行结果]:",ret)
 
         #更新数据库任务执行状态
         print("[更新数据库任务状态]",datetime.now())
@@ -89,6 +93,3 @@ async def main():
                     await Task_Ret.create(user=user, time=datetime.now().date(), status=0)
         print("[今日任务结束]", datetime.now())
         # await asyncio.sleep(30) #测试使用!!!!!!
-
-if __name__ == "__main__":
-    asyncio.run(main())

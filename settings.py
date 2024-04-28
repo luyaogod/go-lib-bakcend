@@ -1,13 +1,14 @@
 import asyncio
 
 #TORTOISE_ORM数据库配置
-TORTOISE_ORM = {
+#localhost or db
+def orm_conf(host):
+    conf = {
         'connections': {
             'default': {
                 'engine': 'tortoise.backends.mysql',
                 'credentials': {
-                    # 'host': 'localhost',
-                    'host': 'db',
+                    'host': host,
                     'port': '3306',
                     'user': 'root',
                     'password': 'maluyao123',
@@ -24,14 +25,11 @@ TORTOISE_ORM = {
             }
         }
     }
+    return conf
 
-#跨域本地调试配置
-# ALLOWHOSTS = [
-#     "http://127.0.0.1",
-#     "http://localhost",
-#     "http://localhost:8000",
-#     "http://localhost:5173",
-# ]
+# TORTOISE_ORM = orm_conf("localhost")
+TORTOISE_ORM = orm_conf("db")
+
 
 #跨域服务器配置
 ALLOWHOSTS = [
@@ -46,11 +44,11 @@ ADMIN_UUID = '6f981e3e-73d4-4701-9296-28ffafc0e8eb'
 
 
 #后台抢座任务时间控制
-BOOK_TASK_PULL = [19,59,40]
-BOOK_TASK_CONNECT = [19,59,58]
-BOOK_TASK_CONNECT_ADJUST = 0
-BOOK_TASK_RUN = [20,0,0]
-
+TIME_PUSH_TASK_IN_POOL = [19,59,0]
+TIME_PULL_TASK_FROM_POOL = [19,59,10]
+TIME_WS_CONNECT = [19,59,40]
+TIME_BOOK_GO = [19,59,59]
+TIME_CLEAR_POOL = [20,10,0]
 
 #全局队列
 QUEUE = asyncio.Queue()
