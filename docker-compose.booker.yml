@@ -5,7 +5,7 @@ services:
     container_name: booker1
     build: .
     restart: always
-    command: bash -c "python3 -u book_main.py ${DB_HOST} ${BOOKIER_SIZE} ${BOOKER1_ID}"
+    command: bash -c "python3 -u book_main.py ${DB_HOST} ${BOOKER_SIZE} ${BOOKER1_ID}"
     volumes:
       - .:/app
 
@@ -13,6 +13,6 @@ services:
     container_name: booker2
     build: .
     restart: always
-    command: bash -c "python3 -u book_main.py ${DB_HOST} ${BOOKIER_SIZE} ${BOOKIER2_ID}"
+    command: bash -c "python3 -u book_main.py ${DB_HOST} ${BOOKER_SIZE} ${BOOKER2_ID}"
     volumes:
       - .:/app
