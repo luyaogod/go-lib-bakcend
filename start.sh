@@ -1,6 +1,6 @@
 #!/bin/bash
 echo "启动docker容器..."
-docker compose up -f docker-compose.server.yml -d
+docker compose -f docker-compose.server.yml up -d
 
 echo "等待mysql可用..."
 sleep 40

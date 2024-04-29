@@ -1,6 +1,6 @@
 ### fast-api server启动指令
 ```bash
-docker compose up -f docker-compose.server.yml -d
+docker compose -f docker-compose.server.yml up -d
 
 docker exec -it bash backend
 
@@ -15,7 +15,7 @@ chmod +x start.sh
 
 ### 抢座进程启动指令
 ```bash
-docker docker compose up -f docker-compose.booker.yml -d
+docker compose -f docker-compose.booker.yml up -d
 
 DB_HOST=47.94.172.195 BOOKER1_ID=2 BOOKER1_ID=3 \
 docker-compose up -f docker-compose.booker.yml -d
