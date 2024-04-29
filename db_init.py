@@ -263,8 +263,6 @@ async def main():
             print("用户不存在")
 
     #测试数据
-    for i in range(8):
-        await Task_Pool.create(task_id=(i+1))
 
 if __name__ == "__main__":
     run_async(main())
