@@ -34,6 +34,7 @@ async def pull_tasks(workers_size,worker_id):
             else:
                 task_item['seats'] = await user_all_seats_clean(data)
                 task_list.append(task_item)
+    print('clean_data',task_list)
     #负载均衡任务分配
     distributed_tasks = []
     for i in range(len(task_list)):
