@@ -31,6 +31,7 @@ async def pull_tasks(workers_size,worker_id):
             data = await user_all_seat(user)
             if data == None:
                 task_item['seats'] = []
+                task_list.append(task_item) #测试
             else:
                 task_item['seats'] = await user_all_seats_clean(data)
                 task_list.append(task_item)
