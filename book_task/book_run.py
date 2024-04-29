@@ -16,7 +16,9 @@ async def pull_tasks(workers_size,worker_id):
     task_list = []
     #从池中获取任务
     data_list = await Task_Pool.all().prefetch_related('task')
+    print("row_data:",data_list)
     for data in data_list:
+        print(dict(data.task))
         i = data.task
         task_item = {}
         task_item['task_id'] = i.id

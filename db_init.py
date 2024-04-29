@@ -253,7 +253,7 @@ async def main():
     now = datetime.now()
     now -= timedelta(days=1)
     add_time = datetime(now.year, now.month, now.day,8,0,0)
-    wx_cookie = ""
+    wx_cookie = "cookie"
     vips = [ADMIN_NAME,"李世辉","黄欣","杨蝶","赵梓涵","刘力菀","李冰冰","赵泽萱"]
     for vip in vips:
         user = await User.get_or_none(username=vip)
