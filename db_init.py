@@ -1,5 +1,5 @@
 from tortoise import Tortoise,run_async
-from models import Lib,Seat,User,Task
+from models import Lib,Seat,User,Task,Task_Pool
 from settings import TORTOISE_ORM
 from settings import ADMIN_UUID,ADMIN_NAME
 import json
@@ -262,6 +262,9 @@ async def main():
         else:
             print("用户不存在")
 
+    #测试数据
+    for i in range(8):
+        await Task_Pool.create(task_id=(i+1))
 
 if __name__ == "__main__":
     run_async(main())

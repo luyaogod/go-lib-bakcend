@@ -56,42 +56,56 @@ async def main(host,worker_size,worker_id):
     print('[BOOKER SETUP]')
     print(f"BOOKER SIZE: {worker_size}")
     print(f'BOOKER ID: {worker_id}')
+    await init(host)
+
+    print("[DB]:数据库连接测试...")
+    user = await User.get_or_none(username='mario')
+    if (user):
+        print(f'[DB]:数据库连接成功,{user.username}')
+    else:
+        print('[DB]:数据库连接出错')
 
     while True:
+        print("[DB]:数据库连接测试...")
+        user = await User.get_or_none(username='mario')
+        if (user):
+            print(f'[DB]:数据库连接成功,{user.username}')
+        else:
+            print('[DB]:数据库连接出错')
+
         # 任务拉取和分配
-        now = datetime.now()
-        pull_time = datetime(now.year, now.month, now.day, *TIME_PULL_TASK_FROM_POOL)
-        await sleep_to(pull_time)
+        # now = datetime.now()
+        # pull_time = datetime(now.year, now.month, now.day, *TIME_PULL_TASK_FROM_POOL)
+        # await sleep_to(pull_time)
         print("[开始装载任务列表]",datetime.now())
-        await init(host)
         try:
             data_list = await pull_tasks(worker_size,worker_id)
             # print(data_list) #测试输出
         except Exception as e:
             data_list = []
             print("[book_task-truck-error]:",e)
-        # print(data_list)
+        print(data_list)
 
         #抢座tasks创建
-        connect_time = datetime(now.year, now.month, now.day, *TIME_WS_CONNECT)
-        await sleep_to(connect_time)
-        print("[开始连接WS]",datetime.now())
-        ret =  await tasks_worker(data_list)
-
-        #更新数据库任务执行状态
-        print("[更新数据库任务状态]",datetime.now())
-        for r in ret:
-            print("[任务状态]:",r)
-            task = await Task.get_or_none(id = r["task_id"])
-            if task:
-                user = await User.get_or_none(pk=task.user_id)
-                if r["result"]:
-                    #任务成功
-                    await Task_Ret.create(user=user, time=datetime.now().date(), status=1)
-                    user.balance -= 1
-                    await user.save()
-                else:
-                    #任务失败
-                    await Task_Ret.create(user=user, time=datetime.now().date(), status=0)
-        print("[今日任务结束]", datetime.now())
-        # await asyncio.sleep(30) #测试使用!!!!!!
+        # connect_time = datetime(now.year, now.month, now.day, *TIME_WS_CONNECT)
+        # await sleep_to(connect_time)
+        # print("[开始连接WS]",datetime.now())
+        # ret =  await tasks_worker(data_list)
+        #
+        # #更新数据库任务执行状态
+        # print("[更新数据库任务状态]",datetime.now())
+        # for r in ret:
+        #     print("[任务状态]:",r)
+        #     task = await Task.get_or_none(id = r["task_id"])
+        #     if task:
+        #         user = await User.get_or_none(pk=task.user_id)
+        #         if r["result"]:
+        #             #任务成功
+        #             await Task_Ret.create(user=user, time=datetime.now().date(), status=1)
+        #             user.balance -= 1
+        #             await user.save()
+        #         else:
+        #             #任务失败
+        #             await Task_Ret.create(user=user, time=datetime.now().date(), status=0)
+        # print("[今日任务结束]", datetime.now())
+        await asyncio.sleep(3600) #测试使用!!!!!!

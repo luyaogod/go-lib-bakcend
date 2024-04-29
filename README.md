@@ -17,6 +17,7 @@ chmod +x start.sh
 ```bash
 docker compose -f docker-compose.booker.yml up -d
 
-DB_HOST=47.94.172.195 BOOKER1_ID=2 BOOKER2_ID=3 \
+DB_HOST= \ 
+BOOKER1_ID= BOOKER2_ID= \
 docker compose -f docker-compose.booker.yml up -d
 ```

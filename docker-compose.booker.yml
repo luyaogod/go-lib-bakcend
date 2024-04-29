@@ -16,3 +16,19 @@ services:
     command: bash -c "python3 -u book_main.py ${DB_HOST} ${BOOKER_SIZE} ${BOOKER2_ID}"
     volumes:
       - .:/app
+
+  booker3:
+    container_name: booker3
+    build: .
+    restart: always
+    command: bash -c "python3 -u book_main.py ${DB_HOST} ${BOOKER_SIZE} ${BOOKER3_ID}"
+    volumes:
+      - .:/app
+
+  booker4:
+    container_name: booker4
+    build: .
+    restart: always
+    command: bash -c "python3 -u book_main.py ${DB_HOST} ${BOOKER_SIZE} ${BOOKER4_ID}"
+    volumes:
+      - .:/app
