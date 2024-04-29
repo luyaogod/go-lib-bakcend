@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  booker1:
+    container_name: booker1
+    build: .
+    restart: always
+    command: bash -c "python3 -u book_main.py ${DB_HOST} ${BOOKIER_SIZE} ${BOOKER1_ID}"
+    volumes:
+      - .:/app
+
+  booker2:
+    container_name: booker2
+    build: .
+    restart: always
+    command: bash -c "python3 -u book_main.py ${DB_HOST} ${BOOKIER_SIZE} ${BOOKIER2_ID}"
+    volumes:
+      - .:/app

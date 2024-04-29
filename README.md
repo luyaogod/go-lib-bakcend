@@ -1,16 +1,22 @@
-###fast-api server启动指令
+### fast-api server启动指令
 ```bash
-docker compose up -d
+docker compose up -f docker-compose.server.yml -d
+
 docker exec -it bash backend
+
 docker pyhton3 db_init.py
 ```
-###抢座进程启动指令
+
+### 通过shell脚本启动fast-api server
 ```bash
-docker build -t booker .
+chmod +x start.sh
+./start.sh
+```
 
-docker run -d --name mybooker0 --restart unless-stopped \
-booker bash -c "python3 book_main.py 127.0.0.1 2 0"
+### 抢座进程启动指令
+```bash
+docker docker compose up -f docker-compose.booker.yml -d
 
-docker run -d --name mybooker0 booker \
-bash -c "python3 book_main.py 127.0.0.1 2 0"
+DB_HOST=47.94.172.195 BOOKER1_ID=2 BOOKER1_ID=3 \
+docker-compose up -f docker-compose.booker.yml -d
 ```
