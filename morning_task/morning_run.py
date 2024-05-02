@@ -77,8 +77,10 @@ async def create_workers(data_list):
     return ret
 
 async def main(host):
+    print(host)
     print('[MORNING BOOKER SETUP]')
     await init(host)
+
 
     print("[DB]:数据库连接测试...")
     user = await User.get_or_none(username='mario')
