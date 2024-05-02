@@ -6,7 +6,7 @@ class Lib(Model):
     lib_id = fields.IntField(description="楼层id")
 
 class Seat(Model):
-    seat_id = fields.IntField(description='楼层id')
+    seat_id = fields.IntField(description='座位id')
     seat_key = fields.CharField(max_length=20,description="楼层Key")
 
     user: fields.ManyToManyRelation["User"] = \

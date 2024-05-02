@@ -83,6 +83,8 @@ async def switch_status(user=Depends(user_auth_dependencie)):
     task = await Task.get_or_none(user=user)
     if not task:
         return error_response('任务不存在！')
+    print(task.open)
+    print()
     task.open = not task.open
     await task.save()
     return success_response('状态切换成功！')

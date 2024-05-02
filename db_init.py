@@ -262,7 +262,42 @@ async def main():
         else:
             print("用户不存在")
 
-    #测试数据
+#测试数据
+from utils.sql_tools import DeBug_log_ini
+from api_funcs.user_func import user_all_seat,user_all_seats_clean
+async def pull_tasks(workers_size,worker_id):
+    task_list = []
+    #从池中获取任务
+    data_list = await Task_Pool.all().prefetch_related('task')
+    for data in data_list:
+        i = data.task
+        task_item = {}
+        task_item['task_id'] = i.id
+        task_item['wx_cookie'] = i.wx_cookie
+        task_item['user_id'] = i.user_id
+        user = await User.get_or_none(id=i.user_id)
+        if user == None:
+            task_item['seats'] = []
+        else:
+            data = await user_all_seat(user)
+            if data == None:
+                pass
+            else:
+                task_item['seats'] = await user_all_seats_clean(data)
+                task_list.append(task_item)
+    #负载均衡任务分配
+    distributed_tasks = []
+    for i in range(len(task_list)):
+        if i % workers_size == worker_id:
+            distributed_tasks.append(task_list[i])
+    # print(distributed_tasks)
+    return distributed_tasks
+
+async def test():
+    DeBug_log_ini()
+    await init()
+    await pull_tasks(1,0)
 
 if __name__ == "__main__":
-    run_async(main())
+
+    run_async(test())
