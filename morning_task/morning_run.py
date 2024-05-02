@@ -1,4 +1,4 @@
-from morning_func import captcha_get_and_seat_get
+from morning_task.morning_func import captcha_get_and_seat_get
 import asyncio
 from datetime import datetime
 from models import User,Task,Morning_Task_Pool,Morning_Task_Ret

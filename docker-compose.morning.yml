@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   booker:
-    container_name: booker
+    container_name: morning
     build: .
     restart: always
     command: bash -c "python3 -u morning_main.py ${DB_HOST} "
