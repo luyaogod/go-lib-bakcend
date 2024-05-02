@@ -10,7 +10,10 @@ class Seat(Model):
     seat_key = fields.CharField(max_length=20,description="楼层Key")
 
     user: fields.ManyToManyRelation["User"] = \
-        fields.ManyToManyField("models.User", related_name="seats", on_delete=fields.CASCADE)
+        fields.ManyToManyField("models.User", related_name="seats", on_delete=fields.CASCADE, through="seat_user")
+
+    morning_user: fields.ManyToManyRelation["User"] = \
+        fields.ManyToManyField("models.User", related_name="morning_seats", on_delete=fields.CASCADE, through="morning_seat_user")
 
     lib: fields.ForeignKeyRelation[Lib] = fields.ForeignKeyField(
         "models.Lib", related_name="seats"
@@ -21,6 +24,7 @@ class User(Model):
     uuid = fields.UUIDField()
     balance = fields.IntField(description="次数余额")
     seats: fields.ManyToManyRelation[Seat]
+    morning_seats: fields.ManyToManyRelation[Seat]
 
 class Task(Model):
     add_time = fields.DatetimeField(description="创建时间")

@@ -75,6 +75,36 @@ async def update_user_seat_list(user,datalist):
     await user.seats.clear()
     await user.seats.add(*seat_list)
     return 0
+#---------------------------------------------------------------------
+async def get_and_validate_seat_list_morning(datalist,user:User):
+    seat_list = []
+    count = 1
+    for data in datalist:
+        seat = await get_seat(lib_id=data['lib_id'], seat_name_id=data['seat_name_id'])
+        if not seat:
+            return count
+        if count == 1:
+            users_on_seat = await User.filter(morning_seats=seat)
+            users_on_seat_id_list = []
+            for i in users_on_seat:
+                users_on_seat_id_list.append(i.id)
+            if users_on_seat_id_list:
+                if not user.id in users_on_seat_id_list:
+                    return -count
+        seat_list.append(seat)
+        count += 1
+    return seat_list
+
+
+#func 更新morning座位
+async def update_user_seat_list_morning(user,datalist):
+    seat_list = await get_and_validate_seat_list_morning(datalist=datalist,user=user)
+    if type(seat_list) == int:
+        return seat_list #校验失败返回错误数据的位序
+    await user.morning_seats.clear()
+    await user.morning_seats.add(*seat_list)
+    return 0
+#--------------------------------------------------------------------
 
 #func 删除座位
 async def delete_seat_user_relation(user,seat_id):

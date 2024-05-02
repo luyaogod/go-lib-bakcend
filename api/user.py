@@ -57,6 +57,19 @@ async def update_seat_list(data:schemas.SeatsListIn,user=Depends(user_auth_depen
     if data<0:
         return error_response(f'第{-data}个座位已经被别人绑定了！')
 
+@router.post('/update_seat_list_morning/{uuid}',summary='更新早晨座位列表')
+async def update_seat_list_morning(data:schemas.SeatsListIn,user=Depends(user_auth_dependencie)):
+    if user.balance <= 0:
+        return error_response('您的余额不足请联系管理员')
+    data_list = data.model_dump()['seats']
+    data =  await user_func.update_user_seat_list_morning(user,data_list)
+    if data == 0:
+        return success_response('保存成功')
+    if data>0:
+        return error_response(f'第{data}个座位不存在！')
+    if data<0:
+        return error_response(f'第{-data}个座位已经被别人绑定了！')
+
 @router.post('/save_cookie/{uuid}',summary='保存cookie')
 async def add_task(data:schemas.CreateTaskIn,user=Depends(user_auth_dependencie)):
     wx_url = data.wx_url

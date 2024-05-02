@@ -2,7 +2,6 @@ from morning_func import captcha_get_and_seat_get
 import asyncio
 from datetime import datetime
 from models import User,Task,Morning_Task_Pool,Morning_Task_Ret
-from api_funcs.user_func import user_all_seat,user_all_seats_clean
 from settings import orm_conf,TIME_PULL_MORNING_TASK_FROM_POOL,TIME_MORNING_BOOK_GO
 from tortoise import Tortoise
 import ddddocr
@@ -12,6 +11,33 @@ async def init(host):
     await Tortoise.init(
         config=orm_conf(host)
     )
+
+async def user_all_seat(user):
+    data =  await user.morning_seats.all().prefetch_related('lib')
+    if not len(data)<1:
+        seat_list = []
+        for i in data:
+            data_dict = {}
+            data_dict['seat_data'] = dict(i)
+            data_dict['seat_lib'] = dict(i.lib)
+            seat_list.append(data_dict)
+        return seat_list
+    else:
+        return None #用户无座位
+
+async def user_all_seats_clean(data,is_book=True):
+    task_data_list = []
+    for i in data:
+        data_dict = {}
+        data_dict["lib_id"] = str(i["seat_lib"]["lib_id"])
+        seat_key =i["seat_data"]["seat_key"]
+        if is_book:
+            pass
+        else:
+            seat_key =seat_key.replace(".","")
+        data_dict["seat_key"] = seat_key
+        task_data_list.append(data_dict)
+    return task_data_list
 
 async def pull_morning_tasks():
     task_list = []
@@ -103,6 +129,6 @@ async def main(host):
                 #任务失败
                 await Morning_Task_Ret.create(user=user, time=datetime.now().date(), status=0)
         print("[今日任务结束]", datetime.now())
-        # await asyncio.sleep(3600) #测试使用!!!!!!
+        await asyncio.sleep(3600) #测试使用!!!!!!
 
 asyncio.run(main('localhost'))
