@@ -1,7 +1,6 @@
 import asyncio
 
 #TORTOISE_ORM数据库配置
-#localhost or db
 def orm_conf(host):
     conf = {
         'connections': {
@@ -49,6 +48,11 @@ TIME_PULL_TASK_FROM_POOL = [19,59,10]
 TIME_WS_CONNECT = [19,59,40]
 TIME_BOOK_GO = [20,00,00]
 TIME_CLEAR_POOL = [20,10,0]
+
+#早晨抢座任务时间控制
+TIME_PULL_MORNING_TASK_FROM_POOL=[6,29,50]
+TIME_MORNING_BOOK_GO=[6,30,0]
+TIME_CLEAR_MORNING_TASK_POOL = [6,35,0]
 
 #全局队列
 QUEUE = asyncio.Queue()

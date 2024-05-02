@@ -3,7 +3,7 @@ from utils.dependence import user_auth_dependencie
 from api_funcs import user_func
 from utils.response import success_response,error_response
 import schemas
-from models import Task
+from models import Task,Morning_Task_Pool
 
 router = APIRouter()
 
@@ -88,3 +88,13 @@ async def switch_status(user=Depends(user_auth_dependencie)):
     task.open = not task.open
     await task.save()
     return success_response('状态切换成功！')
+
+@router.get('/add_morning_task/{uuid}',summary='创建明日任务')
+async def add_morning_task(user=Depends(user_auth_dependencie)):
+    wx_cooke_data = await Task.get_or_none(user=user)
+    if wx_cooke_data == None:
+        return error_response('请先提交令牌！')
+    if (wx_cooke_data.status == 0):
+        return error_response('令牌过期，请重新提交！')
+    await Morning_Task_Pool.create(user=user)
+    return success_response('任务创建成功！')

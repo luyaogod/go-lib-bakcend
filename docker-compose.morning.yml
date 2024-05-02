@@ -5,6 +5,6 @@ services:
     container_name: booker
     build: .
     restart: always
-    command: bash -c "python3 -u book_main.py ${DB_HOST} ${BOOKER_SIZE} ${BOOKER_ID}"
+    command: bash -c "python3 -u morning_main.py ${DB_HOST} "
     volumes:
       - .:/app
