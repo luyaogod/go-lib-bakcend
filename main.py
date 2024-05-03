@@ -8,7 +8,7 @@ from tortoise.exceptions import OperationalError, DoesNotExist, IntegrityError, 
 from utils import exception
 from fastapi.middleware.cors import CORSMiddleware
 from cookies_keeper import register_cookie_keeper
-from task_pool_worker import register_task_pool
+from task_pool_worker import register_task_pool,register_morning_pool_clean
 
 app = FastAPI()
 
@@ -38,6 +38,11 @@ register_cookie_keeper(app=app)
 
 #注册任务池
 register_task_pool(app=app)
+
+
+#注册morning任务池清理
+register_morning_pool_clean(app=app)
+
 
 #跨域
 app.add_middleware(

@@ -1,7 +1,7 @@
-from models import Task_Pool,Task,User,Morning_Task_Pool
+from models import Task_Pool,Task,User
 from api_funcs.user_func import user_all_seat
 from utils.clock import sleep_to
-from settings import TIME_PUSH_TASK_IN_POOL,TIME_CLEAR_POOL,TIME_CLEAR_MORNING_TASK_POOL
+from settings import TIME_PUSH_TASK_IN_POOL,TIME_CLEAR_POOL
 from datetime import datetime
 
 async def get_pool_tasks():
@@ -28,16 +28,9 @@ async def push_task_to_pool():
         await Task_Pool.create(task=i)
 
 
-async def main():
+async def daily_task_pull_main():
+    print('INFO:    [启动日常任务推送程序]')
     while True:
-        #清理Morning任务池
-        now = datetime.now()
-        push_time = datetime(now.year, now.month, now.day, *TIME_CLEAR_MORNING_TASK_POOL)
-        await sleep_to(push_time)
-        print("[清理Morning任务池]")
-        await Morning_Task_Pool.all().delete()
-        print("[任务池清理完毕]")
-
         #推送任务进池
         now = datetime.now()
         push_time = datetime(now.year, now.month, now.day, *TIME_PUSH_TASK_IN_POOL)
