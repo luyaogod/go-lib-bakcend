@@ -14,9 +14,17 @@ async def get_user(user=Depends(user_auth_dependencie)):
     else:
         return error_response('用户不存在')
 
-@router.get('/get_all_lib/{uuid}',summary='获取座位列表')
+@router.get('/get_all_seats/{uuid}',summary='获取座位列表')
 async def ge_all_lib(user=Depends(user_auth_dependencie)):
     result =  await user_func.user_all_seat(user)
+    if result:
+        return success_response(result)
+    else:
+        return error_response([])
+
+@router.get('/get_all_morning_seats/{uuid}',summary='获取早晨座位列表')
+async def ge_all_lib(user=Depends(user_auth_dependencie)):
+    result =  await user_func.user_all_morning_seat(user)
     if result:
         return success_response(result)
     else:
@@ -103,11 +111,17 @@ async def switch_status(user=Depends(user_auth_dependencie)):
     return success_response('状态切换成功！')
 
 @router.get('/add_morning_task/{uuid}',summary='创建明日任务')
-async def add_morning_task(user=Depends(user_auth_dependencie)):
-    wx_cooke_data = await Task.get_or_none(user=user)
-    if wx_cooke_data == None:
-        return error_response('请先提交令牌！')
-    if (wx_cooke_data.status == 0):
-        return error_response('令牌过期，请重新提交！')
-    await Morning_Task_Pool.create(user=user)
-    return success_response('任务创建成功！')
+async def add_morning_task_func(user=Depends(user_auth_dependencie)):
+    result = await user_func.add_morning_task(user=user)
+    if result == 0:
+        return success_response('任务创建成功')
+    if result == -1:
+        return error_response('余额不足！')
+    if result == -2:
+        return error_response('请添加座位！')
+    if result == 3:
+        return error_response('请先前往提交令牌！')
+    if result == -4:
+        return error_response('令牌过期，请前往提交令牌！')
+    if result == -5:
+        return error_response('禁止重复提交任务')

@@ -53,3 +53,13 @@ async def all_tasks(user=Depends(admin_auth_dependencie)):
 async def task_ret(offset:int,user=Depends(admin_auth_dependencie)):
     result = await admin_func.task_ret(offset)
     return result
+
+@router.get('/all_tasks_morning/{uuid}',summary='早晨任务列表')
+async def morning_all_tasks(user=Depends(admin_auth_dependencie)):
+    result =  await admin_func.get_all_task_morning()
+    return result
+
+@router.get('/task_ret_morning/{offset}/{uuid}',summary='早晨任务执行结果')
+async def morning_task_ret(offset:int,user=Depends(admin_auth_dependencie)):
+    result = await admin_func.task_ret_morning(offset)
+    return result

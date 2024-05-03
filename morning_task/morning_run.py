@@ -6,24 +6,12 @@ from settings import orm_conf,TIME_PULL_MORNING_TASK_FROM_POOL,TIME_MORNING_BOOK
 from tortoise import Tortoise
 import ddddocr
 from utils.clock import sleep_to
+from api_funcs import user_func
 
 async def init(host):
     await Tortoise.init(
         config=orm_conf(host)
     )
-
-async def user_all_seat(user):
-    data =  await user.morning_seats.all().prefetch_related('lib')
-    if not len(data)<1:
-        seat_list = []
-        for i in data:
-            data_dict = {}
-            data_dict['seat_data'] = dict(i)
-            data_dict['seat_lib'] = dict(i.lib)
-            seat_list.append(data_dict)
-        return seat_list
-    else:
-        return None #用户无座位
 
 async def user_all_seats_clean(data,is_book=True):
     task_data_list = []
@@ -56,7 +44,7 @@ async def pull_morning_tasks():
         if user == None:
             task_item['seats'] = []
         else:
-            data = await user_all_seat(user)
+            data = await user_func.user_all_morning_seat(user)
             if data == None:
                 pass
             else:

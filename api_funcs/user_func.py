@@ -1,4 +1,4 @@
-from models import User,Seat,Lib,Task
+from models import User,Seat,Lib,Task,Morning_Task_Pool
 from utils.get_cookie import get_wx_cookie
 from datetime import datetime
 from settings import USER_SEAT_SIZE
@@ -129,6 +129,7 @@ async def user_all_seat(user):
     else:
         return None #用户无座位
 
+
 #tools 所有座位列表取楼层id和座位key
 async def user_all_seats_clean(data,is_book=True):
     task_data_list = []
@@ -143,6 +144,20 @@ async def user_all_seats_clean(data,is_book=True):
         data_dict["seat_key"] = seat_key
         task_data_list.append(data_dict)
     return task_data_list
+
+#func 获取所有早晨座位
+async def user_all_morning_seat(user):
+    data =  await user.morning_seats.all().prefetch_related('lib')
+    if not len(data)<1:
+        seat_list = []
+        for i in data:
+            data_dict = {}
+            data_dict['seat_data'] = dict(i)
+            data_dict['seat_lib'] = dict(i.lib)
+            seat_list.append(data_dict)
+        return seat_list
+    else:
+        return None #用户无座位
 
 #tools-获取微信cookie
 async def get_wechat_cookie(url:str):
@@ -184,6 +199,21 @@ async def save_cookie(user,wx_url):
     await QUEUE.put(user.id)
     return 1 #添加成功
 
-
+async def add_morning_task(user):
+    if user.balance <= 0:
+        return -1  # 用户余额不足
+    user_seats = await user_all_morning_seat(user)
+    if not user_seats:
+        return -2  # 未绑定座位
+    wx_cooke_data = await Task.get_or_none(user=user)
+    if wx_cooke_data == None:
+        return -3 # 没有令牌
+    if (wx_cooke_data.status == 0):
+        return -4 #令牌过期
+    morning_task = await Morning_Task_Pool.get_or_none(user=user)
+    if morning_task:
+        return -5 #禁止重复提交
+    await Morning_Task_Pool.create(user=user)
+    return 0 #创建成功
 
 
