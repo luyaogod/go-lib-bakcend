@@ -5,8 +5,7 @@ services:
     container_name: morning
     build: .
     restart: always
-    command: bash -c "python3 -u morning_main.py ${DB_HOST} "
+    command: bash -c "python3 -u morning_main.py"
     volumes:
       - .:/app
-    environment:
-      - DB_HOST
+
