@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  booker:
+  morning:
     container_name: morning
     build: .
     restart: always
