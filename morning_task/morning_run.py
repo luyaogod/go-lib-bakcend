@@ -132,5 +132,3 @@ async def main(host):
                 await Morning_Task_Ret.create(user=user, time=datetime.now().date(), status=0)
         print("[今日任务结束]", datetime.now())
         await asyncio.sleep(3600) #测试使用!!!!!!
-
-asyncio.run(main('localhost'))
