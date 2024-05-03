@@ -8,3 +8,5 @@ services:
     command: bash -c "python3 -u morning_main.py ${DB_HOST} "
     volumes:
       - .:/app
+    environment:
+      - DB_HOST
