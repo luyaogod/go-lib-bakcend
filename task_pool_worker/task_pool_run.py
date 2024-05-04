@@ -28,21 +28,21 @@ async def push_task_to_pool():
         await Task_Pool.create(task=i)
 
 
-async def daily_task_pull_main():
-    print('INFO:    [启动日常任务推送程序]')
+async def daily_task_pull_main(logger):
+    logger.info("启动日常任务推送程序")
     while True:
         #推送任务进池
         now = datetime.now()
         push_time = datetime(now.year, now.month, now.day, *TIME_PUSH_TASK_IN_POOL)
         await sleep_to(push_time)
-        print("[开始推送任务进任务池]", datetime.now())
+        logger.info(f"开始推送日常任务入池-{datetime.now()}")
         await push_task_to_pool()
-        print("[推送完成]", datetime.now())
+        logger.info(f"推送完成")
 
         #清空池
         now = datetime.now()
         clear_time = datetime(now.year, now.month, now.day, *TIME_CLEAR_POOL)
         await sleep_to(clear_time)
-        print("[开始清理任务池]", datetime.now())
+        logger.info('开始清理任务池')
         await Task_Pool.all().delete()
-        print("[任务池清理完毕]", datetime.now())
+        logger.info(f'任务池清理完毕-{datetime.now()}')
