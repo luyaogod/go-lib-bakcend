@@ -26,6 +26,10 @@ class User(Model):
     seats: fields.ManyToManyRelation[Seat]
     morning_seats: fields.ManyToManyRelation[Seat]
 
+class User_First_Seat(Model):
+    user_id = fields.IntField(description='用户ID',unique=True)
+    first_seat_id = fields.IntField(description='用户首座位ID',unique=True)
+
 class Task(Model):
     add_time = fields.DatetimeField(description="创建时间")
     wx_cookie = fields.TextField(description='微信cookie')

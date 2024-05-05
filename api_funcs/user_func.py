@@ -1,4 +1,4 @@
-from models import User,Seat,Lib,Task,Morning_Task_Pool
+from models import User,Seat,Lib,Task,Morning_Task_Pool,User_First_Seat
 from utils.get_cookie import get_wx_cookie
 from datetime import datetime
 from settings import USER_SEAT_SIZE
@@ -49,31 +49,47 @@ async def add_seat_user_relation(user,lib_id,seat_name_id):
 
 #tools 校验座位信息并返回座位id列表（带有座位查重）
 async def get_and_validate_seat_list(datalist,user:User):
-    seat_list = []
+    """
+    校验座位信息并对第一个座位做查重
+
+    :param datalist: 座位数据列表[ {lib_id:int, seat_name_id:int} ]
+    :param user: 用户query对象
+    :return: 返回seat对象数组[seat,seat]
+    """
+    #查询封装所用用户第一个座位列表
+    all_user_first_seat = await User_First_Seat.all()
+    all_user_first_seat_id_list = []
+    for user_first_seat in all_user_first_seat:
+        all_user_first_seat_id_list.append(user_first_seat.first_seat_id)
+
+    validate_seat_list = []
     count = 1
     for data in datalist:
         seat = await get_seat(lib_id=data['lib_id'], seat_name_id=data['seat_name_id'])
         if not seat:
-            return count
-        if count == 1:
-            users_on_seat = await User.filter(seats=seat)
-            users_on_seat_id_list = []
-            for i in users_on_seat:
-                users_on_seat_id_list.append(i.id)
-            if users_on_seat_id_list:
-                if not user.id in users_on_seat_id_list:
-                    return -count
-        seat_list.append(seat)
+            return count #返回正位序表示座位不存在
+        if seat.id in all_user_first_seat_id_list:
+            return -count #返回负位序表示座位被占
+        validate_seat_list.append(seat)
         count += 1
-    return seat_list
+    return validate_seat_list
+
 
 #func 同时更新一组座位
 async def update_user_seat_list(user,datalist):
+    #更新用户座位列表
     seat_list = await get_and_validate_seat_list(datalist=datalist,user=user)
     if type(seat_list) == int:
         return seat_list #校验失败返回错误数据的位序
     await user.seats.clear()
     await user.seats.add(*seat_list)
+    user_first_seat = await User_First_Seat.get_or_none(user_id=user.id)
+    #更新用户第一个座位
+    if user_first_seat == None:
+        await User_First_Seat.create(user_id=user.id,first_seat_id=seat_list[0].id)
+    else:
+        user_first_seat.first_seat_id=seat_list[0].id
+        await user_first_seat.save()
     return 0
 #---------------------------------------------------------------------
 async def get_and_validate_seat_list_morning(datalist,user:User):
@@ -83,14 +99,7 @@ async def get_and_validate_seat_list_morning(datalist,user:User):
         seat = await get_seat(lib_id=data['lib_id'], seat_name_id=data['seat_name_id'])
         if not seat:
             return count
-        if count == 1:
-            users_on_seat = await User.filter(morning_seats=seat)
-            users_on_seat_id_list = []
-            for i in users_on_seat:
-                users_on_seat_id_list.append(i.id)
-            if users_on_seat_id_list:
-                if not user.id in users_on_seat_id_list:
-                    return -count
+        #此处的座位重复校验已删除
         seat_list.append(seat)
         count += 1
     return seat_list
@@ -195,7 +204,6 @@ async def save_cookie(user,wx_url):
     else:
         today = datetime.now()
         await Task.create(add_time=today, wx_cookie=wx_cookie, user=user)
-    # print("[测试-user-id]",user.id)
     await QUEUE.put(user.id)
     return 1 #添加成功
 

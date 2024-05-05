@@ -84,7 +84,7 @@ async def main(host,worker_size,worker_id):
         except Exception as e:
             data_list = []
             print("[book_task-truck-error]:",e)
-        print(data_list)
+        # print(data_list)
 
         #抢座tasks创建
         connect_time = datetime(now.year, now.month, now.day, *TIME_WS_CONNECT)

@@ -120,27 +120,26 @@ async def one_get_task_group(ses: aiohttp.ClientSession, ocr: ddddocr.DdddOcr, l
     """
     print('[进入单任务执行]')
     post_data = {'libId': libId, 'seatKey': seatKey, 'captchaCode': '', 'captcha': ''}
-    print(post_data)
     # 单座位请求循环,每个座位允许验证码错误3次
     count = 0
     while count < 3:
         data = await captcha_get(ses=ses, cookie=cookie, ocr=ocr)
         post_data['captchaCode'] = data['captchaCode']
         post_data['captcha'] = data['captcha']
-        # print(post_data) #测试
+        print(post_data) #测试
         await get_lib(ses=ses, cookie=cookie, libId=libId)
         rep = await get_seats(ses=ses, cookie=cookie, **post_data)
         print(rep)
-        # if 'errors' not in rep:
-        #     return 0
-        # else:
-        #     print(rep)
-        #     if ('该座位已经被人预定了' in rep['errors'][0]['msg']):
-        #         await asyncio.sleep(POST_SLEEP)  #这里也要等待因为主循环会进入下一个任务
-        #         return -1
-        #     if ('操作失败, 您已经预定了座位!' in rep['errors'][0]['msg']):
-        #         return -2
-        #     # if ('请输入验证码' in rep['errors'][0]['msg']):
+        if 'errors' not in rep:
+            return 0
+        else:
+            print(rep)
+            if ('该座位已经被人预定了' in rep['errors'][0]['msg']):
+                await asyncio.sleep(POST_SLEEP)  #这里也要等待因为主循环会进入下一个任务
+                return -1
+            if ('操作失败, 您已经预定了座位!' in rep['errors'][0]['msg']):
+                return -2
+            # if ('请输入验证码' in rep['errors'][0]['msg']):
         count += 1
         await asyncio.sleep(POST_SLEEP)
     return -3  # 验证码错误且尝试了三次
