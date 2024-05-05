@@ -71,7 +71,7 @@ async def keeper(user_id,queue=None):
 
                 if update_cookie == True:
                     req_header = rep.request_info.headers.get('Cookie')
-                    print(f'[keeper]:用户{user_id}-cookie更新')
+                    # print(f'[keeper]:用户{user_id}-cookie更新')
                     update_task = await Task.get_or_none(user_id=user_id)
                     update_task.wx_cookie = req_header
                     await update_task.save()
