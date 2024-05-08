@@ -37,7 +37,6 @@ async def insert_seat(libs):
 
 #test---
 
-
 async def main():
     await init()
     await Tortoise.generate_schemas()
@@ -103,7 +102,7 @@ async def main():
         {
             "username": "王姿童",
             "uuid": "1a7e7a53-e204-4dd7-9eb0-b8a7c373a161",
-            "balance": 29
+            "balance": 26
         },
         {
             "username": "客户3",
@@ -113,7 +112,7 @@ async def main():
         {
             "username": "客户2",
             "uuid": "0ca24344-d424-4fe1-95d1-4a22fb6d5e3a",
-            "balance": 29
+            "balance": 26
         },
         {
             "username": "客户4",
@@ -123,12 +122,12 @@ async def main():
         {
             "username": "客户5",
             "uuid": "7c018e97-1a82-475e-8b20-77d37a7c512d",
-            "balance": 22
+            "balance": 20
         },
         {
             "username": "客户6",
             "uuid": "1cae56d9-4fdb-4850-aec0-2e8d135ac360",
-            "balance": 22
+            "balance": 19
         },
         {
             "username": "客户7",
@@ -148,7 +147,7 @@ async def main():
         {
             "username": "施韵",
             "uuid": "4862a048-a34f-4eb8-802c-979f3d1c38bf",
-            "balance": 24
+            "balance": 23
         },
         {
             "username": "客户10",
@@ -168,37 +167,37 @@ async def main():
         {
             "username": "客户13",
             "uuid": "e1f90841-8f6e-480c-9bb8-fae1f2f1c956",
-            "balance": 19
+            "balance": 16
         },
         {
             "username": "客户14",
             "uuid": "5f0a3545-8f81-4511-b0ac-a91bd39418a7",
-            "balance": 21
+            "balance": 19
         },
         {
             "username": "客户15",
             "uuid": "60874674-2193-4e08-b084-1abbc131d7f6",
-            "balance": 27
+            "balance": 25
         },
         {
             "username": "客户16",
             "uuid": "76b350f8-1437-4be3-89e1-0d8441145534",
-            "balance": 24
+            "balance": 22
         },
         {
             "username": "客户17",
             "uuid": "1dddbccb-45d7-448f-9a47-83dc1be3c2bd",
-            "balance": 22
+            "balance": 20
         },
         {
             "username": "客户18",
             "uuid": "043ffe61-63ae-41e1-8ccf-3369f6912654",
-            "balance": 24
+            "balance": 21
         },
         {
             "username": "客户19",
             "uuid": "afeb3c89-ea12-420c-b54a-8503ecd0df8e",
-            "balance": 20
+            "balance": 18
         },
         {
             "username": "客户20",
@@ -213,27 +212,27 @@ async def main():
         {
             "username": "客户22",
             "uuid": "70840bd8-47a3-4fb6-a226-73614081b4fa",
-            "balance": 30
+            "balance": 28
         },
         {
             "username": "客户23",
             "uuid": "b6181614-f9ac-4806-b11f-88c3b630252e",
-            "balance": 70
+            "balance": 67
         },
         {
             "username": "客户24",
             "uuid": "3ccb8595-d68a-41be-9594-8b76b8a3f30a",
-            "balance": 26
+            "balance": 25
         },
         {
             "username": "客户25",
             "uuid": "a1d5f0cc-e9d4-46c8-b3ec-0cbd9484f856",
-            "balance": 30
+            "balance": 27
         },
         {
             "username": "客户26",
             "uuid": "4ae39ee3-2fb6-4454-8284-248de031e08d",
-            "balance": 58
+            "balance": 55
         },
         {
             "username": "客户27",

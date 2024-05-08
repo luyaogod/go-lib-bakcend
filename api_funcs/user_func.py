@@ -58,9 +58,9 @@ async def get_and_validate_seat_list(datalist,user:User):
     """
     #查询封装所用用户第一个座位列表
     all_user_first_seat = await User_First_Seat.all()
-    all_user_first_seat_id_list = []
-    for user_first_seat in all_user_first_seat:
-        all_user_first_seat_id_list.append(user_first_seat.first_seat_id)
+    # all_user_first_seat_id_list = []
+    # for user_first_seat in all_user_first_seat:
+    #     all_user_first_seat_id_list.append(user_first_seat.first_seat_id)
 
     validate_seat_list = []
     count = 1
@@ -68,8 +68,11 @@ async def get_and_validate_seat_list(datalist,user:User):
         seat = await get_seat(lib_id=data['lib_id'], seat_name_id=data['seat_name_id'])
         if not seat:
             return count #返回正位序表示座位不存在
-        if seat.id in all_user_first_seat_id_list:
-            return -count #返回负位序表示座位被占
+        if count == 1:
+            for data in all_user_first_seat:
+                if seat.id == data.first_seat_id and user.id != data.user_id:
+                    return -count  # 返回负位序表示座位被占
+
         validate_seat_list.append(seat)
         count += 1
     return validate_seat_list
