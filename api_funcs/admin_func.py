@@ -1,4 +1,4 @@
-from models import User,Task,Task_Ret
+from models import User,Task,Task_Ret,Morning_Task_Pool,Morning_Task_Ret
 from utils.create_uuid import generate_uuid
 from settings import ADMIN_NAME
 from datetime import datetime,timedelta
@@ -61,3 +61,23 @@ async def task_ret(offset:int):
         rep_data.append(dataItem)
     return rep_data
 
+#全部早上任务
+async def get_all_task_morning():
+    dataList =[]
+    morning_tasks = await Morning_Task_Pool.all().prefetch_related('user')
+    for i in morning_tasks:
+        dataList.append(i.user.username)
+    return dataList
+
+#全部早上任务结果
+async def task_ret_morning(offset:int):
+    #offset为0为当日，每+1减一天
+    now = datetime.now().date()
+    interval = timedelta(days=offset)
+    ret = await Morning_Task_Ret.filter(time=now-interval).all().order_by('-time').prefetch_related('user')
+    rep_data = []
+    for i in ret:
+        dataItem = dict(i)
+        dataItem['username'] = i.user.username
+        rep_data.append(dataItem)
+    return rep_data

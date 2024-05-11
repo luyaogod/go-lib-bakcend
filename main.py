@@ -7,8 +7,10 @@ from api import user,admin
 from tortoise.exceptions import OperationalError, DoesNotExist, IntegrityError, ValidationError
 from utils import exception
 from fastapi.middleware.cors import CORSMiddleware
-from book_task import register_book_task
 from cookies_keeper import register_cookie_keeper
+from task_pool_worker import register_task_pool,register_morning_pool_clean
+import logging
+
 
 app = FastAPI()
 
@@ -28,16 +30,25 @@ app.add_exception_handler(ValidationError, exception.mysql_validation_error)
 app.add_exception_handler(OperationalError, exception.mysql_operational_error)
 
 
+#获取uvicorn日志实例
+logger = logging.getLogger('uvicorn')
+
+
 #注册数据库
 register_tortoise(app=app,config=TORTOISE_ORM)
 
 
-#注册后台抢座程序
-register_book_task(app=app)
-
-
 #注册cookie保活程序
 register_cookie_keeper(app=app)
+
+
+#注册任务池
+register_task_pool(app=app,logger=logger)
+
+
+#注册morning任务池清理
+register_morning_pool_clean(app=app,logger=logger)
+
 
 #跨域
 app.add_middleware(
