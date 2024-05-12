@@ -85,7 +85,7 @@ class Book(UserObj):
     def __init__(
             self,
             user_id: int,
-            ws_send_time: Tuple[int] = (19, 59, 58),
+            ws_send_time: Tuple[int] = (20,0,0),
             ws_size = 100,
             ws_sleep = 0.1,
             post_sleep = 1,

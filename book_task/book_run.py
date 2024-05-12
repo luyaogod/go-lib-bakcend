@@ -72,7 +72,12 @@ class Worker():
         log.info('BOOKER启动')
         log.info(f"BOOKER-SIZE: {self.worker_size}")
         log.info(f'BOOKER-ID: {self.worker_id}')
+        log.info(f"PULL_TIME:{self.pull_task_time}")
+        log.info(f"WS_CONNECT_TIME:{self.ws_connect_time}")
+        log.info(f"WS_SEND_TIME:{self.ws_send_time}")
         log.info('正在测试数据库...')
+        await self.orm_init()
+        await self.orm_init()
         await self.orm_init()
         while True:
             admin = await User.get_or_none(id=1)
