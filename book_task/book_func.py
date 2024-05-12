@@ -1,156 +1,208 @@
 import aiohttp
-from aiohttp.client import ClientSession
+from models import User,Task,Task_Ret
+from typing import Optional,List,Tuple
+from utils.clock import clock
+from .book_log import log
+from .book_utils import make_ws_headers,make_post_headers,make_json_for_lib,make_json_for_seat
 import asyncio
 from datetime import datetime
-from settings import TIME_BOOK_GO
-from utils.clock import sleep_to
 
-WS_SLEEP = 0.1
-POST_SLEEP = 0.9
-WS_SIZE = 500
-UA = "Mozilla/5.0 (Linux; Android 10; TAS-AL00 Build/HUAWEITAS-AL00; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/107.0.5304.141 Mobile Safari/537.36 XWEB/5043 MMWEBSDK/20221109 MMWEBID/6856 MicroMessenger/8.0.31.2281(0x28001F59) WeChat/arm64 Weixin NetType/WIFI Language/zh_CN ABI/arm64"
-WS_SUCCESS_QUEUE = r'{"ns":"prereserve\/queue","msg":"\u6392\u961f\u6210\u529f\uff01\u8bf7\u57282\u5206\u949f\u5185\u9009\u62e9\u5ea7\u4f4d\uff0c\u5426\u5219\u9700\u8981\u91cd\u65b0\u6392\u961f\u3002","code":0,"data":0}'
-WS_SUCCESS_BOOK = r"\u4f60\u5df2\u7ecf\u6210\u529f\u767b\u8bb0\u4e86\u660e\u5929\u7684"
 WS_ERROR_FAIL_COOKIE = r'{"ns":"prereserve\/queue","msg":1000}'
+WS_SUCCESS_BOOK = r"\u4f60\u5df2\u7ecf\u6210\u529f\u767b\u8bb0\u4e86\u660e\u5929\u7684"
+WS_SUCCESS_QUEUE = r'{"ns":"prereserve\/queue","msg":"\u6392\u961f\u6210\u529f\uff01\u8bf7\u57282\u5206\u949f\u5185\u9009\u62e9\u5ea7\u4f4d\uff0c\u5426\u5219\u9700\u8981\u91cd\u65b0\u6392\u961f\u3002","code":0,"data":0}'
 
+class UserObj:
+    def __init__(self,user_id:int):
+        self.user_id = user_id
 
-async def ws_headers(cookie):
-    ws_headers = {
-        "App-Version": "2.1.2.p1",
-        "Accept-Language": "zh-CN,zh;q=0.9",
-        "Cache-Control": "no-cache",
-        "Connection": "Upgrade",
-        "Cookie": cookie,
-        "Host": "wechat.v2.traceint.com",
-        "Origin": "https://web.traceint.com",
-        "Pragma": "no-cache",
-        "Sec-WebSocket-Extensions": "permessage-deflate; client_max_window_bits",
-        "Sec-WebSocket-Key": "3GOVqiw+VDRQcNdjIUPxig==",
-        "Sec-WebSocket-Version": "13",
-        "Upgrade": "websocket",
-        "User-Agent": UA
-    }
-    return ws_headers
+    async def get_user_info(self)->Optional[User]:
+        """
+        查询用户信息
+        :return:
+        """
+        user = await User.get_or_none(id=self.user_id)
+        return user
 
-
-async def post_headers(cookie):
-    post_headers = {
-        "POST": "https://wechat.v2.traceint.com/index.php/graphql/ HTTP/1.1",
-        "Accept": "*/*",
-        "Accept-Encoding": "gzip, deflate, br",
-        "Accept-Language": "zh-CN,zh;q=0.9",
-        "App-Version": "2.1.2.p1",
-        "Connection": "keep-alive",
-        "Content-Type": "application/json",
-        "Cookie": cookie,
-        "Host": "wechat.v2.traceint.com",
-        "Origin": "https://web.traceint.com",
-        "Referer": "https://web.traceint.com/",
-        "Sec-Fetch-Dest": "empty",
-        "Sec-Fetch-Mode": "cors",
-        "Sec-Fetch-Site": "same-site",
-        "User-Agent": UA
-    }
-    return post_headers
-
-
-def json_for_lib_list(lib_id):
-    data = {"operationName": "libLayout",
-            "query": "query libLayout($libId: Int!) {\n userAuth {\n prereserve {\n libLayout(libId: $libId) {\n max_x\n max_y\n seats_booking\n seats_total\n seats_used\n seats {\n key\n name\n seat_status\n status\n type\n x\n y\n }\n }\n }\n }\n}",
-            "variables": {"libId": lib_id}}
-    return data
-
-
-def json_for_book_seat(lib_id, seat_key):
-    json = {
-        "operationName": "save",
-        "query": "mutation save($key: String!, $libid: Int!, $captchaCode: String, $captcha: String) {\n userAuth {\n prereserve {\n save(key: $key, libId: $libid, captcha: $captcha, captchaCode: $captchaCode)\n }\n }\n}",
-        "variables": {"key": seat_key, "libid": lib_id, "captchaCode": "", "captcha": ""}
-    }
-    return json
-
-
-async def ws(session: ClientSession, cookie):
-    headers = await ws_headers(cookie)
-    result = False
-    first_ws_time = ""
-    async with session.ws_connect("wss://wechat.v2.traceint.com/ws?ns=prereserve/queue", headers=headers) as ws:
-        count = 0
-        now = datetime.now()
-
-        run_time = datetime(now.year, now.month, now.day, *TIME_BOOK_GO)
-        await sleep_to(run_time)
-
-        # 正式发起ws连接
-        while count < WS_SIZE:
-            try:
-                await ws.send_str('{"ns":"prereserve/queue","msg":""}')
-            except Exception as e:
-                print("[ws-send-error]", e)
-                await asyncio.sleep(0.5)
-                continue
-            if count == 0:
-                first_ws_time = str(datetime.now())
-            data = await ws.receive()
-            if data.type == aiohttp.WSMsgType.TEXT:
-                if count == 0:
-                    print("[ws]:", data.json())
-                if data.data == WS_ERROR_FAIL_COOKIE:
-                    print("[ws]:", "<wx-cookie失效>")
-                    break
-                if data.data == WS_SUCCESS_QUEUE:
-                    print("[ws]:", "<排队成功>")
-                    result = True
-                    break
-                if WS_SUCCESS_BOOK in data.data:
-                    print("[ws]:", "<已预约座位>")
-                    break
-                await asyncio.sleep(WS_SLEEP)
-                count += 1
-            else:
-                print("[ws]:", "<data-type错误>:", data.type)
-                break
-        if count >= WS_SIZE:
-            print("[ws]:<排队超时>")
-        await ws.close()
-    return {'status': result, "first_ws_time": first_ws_time}
-
-
-async def post(session: ClientSession, json, cookie, need_response: bool = False):
-    headers = await post_headers(cookie)
-    url = "https://wechat.v2.traceint.com/index.php/graphql/"
-    async with session.post(url=url, headers=headers, json=json) as rep:
-        if need_response == True:
-            rep_detail = await rep.text()
-            return rep_detail
+    async def get_user_seats(self)->Optional[List]:
+        """
+        获取用户座位表
+        :return:
+        """
+        user = await User.get_or_none(id=self.user_id)
+        data = await user.seats.all().prefetch_related('lib')
+        if not len(data) < 1:
+            seat_list = []
+            for i in data:
+                data_dict = {}
+                data_dict['lib_id'] = i.lib.lib_id
+                data_dict['seat_key'] = i.seat_key
+                seat_list.append(data_dict)
+            return seat_list
         else:
             return None
 
+    async def reduce_balance(self)->None:
+        """
+        用户余额-1
+        :return:
+        """
+        user = await User.get_or_none(id=self.user_id)
+        user.balance -= 1
+        await user.save()
 
-async def book(wx_cookie, seats, task_id, user_id, **kwargs):
-    async with aiohttp.ClientSession() as session:
+    async def get_user_cookie_obj(self)->Optional[Task]:
+        """
+        获取用户<cookie-查询对象>
+        :return:
+        """
+        cookie_obj = await Task.get_or_none(user__id=self.user_id)
+        return cookie_obj
+
+    async def get_user_cookie(self)->Optional[str]:
+        """
+        获取用户cookie
+        :return: string
+        """
+        cookie_obj = await Task.get_or_none(user__id=self.user_id)
+        if cookie_obj:
+            return cookie_obj.wx_cookie
+        else:
+            return None
+    
+    async def add_task_ret(self,ret:int)->None:
+        """
+        创建任务结果，1成功，0失败
+        """
+        await Task_Ret.create(user_id=self.user_id, time=datetime.now().date(), status=ret)
+        return None
+        
+
+
+class Book(UserObj):
+    """
+    使用Book需要调用init方法
+    """
+    def __init__(
+            self,
+            user_id: int,
+            ws_send_time: Tuple[int] = (19, 59, 58),
+            ws_size = 100,
+            ws_sleep = 0.1,
+            post_sleep = 1,
+    )->None:
+        super().__init__(user_id)
+        self.seats = None
+        self.cookie = None
+        self.ws_headers = None
+        self.post_headers = None
+        self.inited = False
+        self.ses = aiohttp.ClientSession()
+        self.ws_send_time = ws_send_time
+        self.ws_size = ws_size
+        self.post_sleep = post_sleep
+        self.ws_sleep = ws_sleep
+
+    async def init(self)->bool:
+        self.cookie = await self.get_user_cookie()
+        self.seats = await self.get_user_seats()
+        if self.cookie == None or self.seats == None:
+            return False
+        self.ws_headers = make_ws_headers(self.cookie)
+        self.post_headers = make_post_headers(self.cookie)
+        self.inited = True
+        return True
+
+    async def run_ws(self)->bool:
+        """
+        ws排队动作
+        :return:
+        """
         result = False
-        ws_result = await ws(cookie=wx_cookie, session=session)
-        if ws_result["status"]:
-            for i in seats:
-                json1 = json_for_lib_list(lib_id=i["lib_id"])
-                json2 = json_for_book_seat(lib_id=i["lib_id"], seat_key=i["seat_key"])
-                await post(session=session, json=json1, cookie=wx_cookie)
-                rep_text = await post(session=session, json=json2, cookie=wx_cookie, need_response=True)
-                if "error" not in rep_text:
+        async with self.ses.ws_connect(
+                "wss://wechat.v2.traceint.com/ws?ns=prereserve/queue",
+                headers=self.ws_headers) as ws:
+            await clock(self.ws_send_time) 
+            count = 0
+            while count < self.ws_size:
+                await ws.send_str('{"ns":"prereserve/queue","msg":""}')
+                data = await ws.receive()
+                if data.type == aiohttp.WSMsgType.TEXT:
+                    if count == 0:
+                        log.info(f'ws-排队名次{data.json()}')
+                if data.data == WS_ERROR_FAIL_COOKIE:
+                    log.warning(f"ws-cookie失效-user-{self.user_id}")
+                    break
+                if data.data == WS_SUCCESS_QUEUE:
+                    log.info('ws-排队成功')
                     result = True
                     break
-                print(f"[post-fail]:<user{user_id}>", rep_text)
-                await asyncio.sleep(POST_SLEEP)
-        await session.close()
-        return {"task_id": task_id, "result": result, "first_ws_time": ws_result["first_ws_time"]}
+                if WS_SUCCESS_BOOK in data.data:
+                    log.info('ws-已预约座位')
+                    break
+                await asyncio.sleep(self.ws_sleep)
+                count += 1
+            if count >= self.ws_size:
+                log.warning('ws-排队超时')
+            await ws.close()
+        return result
 
-#测试代码
-if __name__ == "__main__":
-    cookie='Authorization=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJ1c2VySWQiOjExMjY5MTI5LCJzY2hJZCI6MTAwMjUsImV4cGlyZUF0IjoxNzE0MzI1NTQ3fQ.bdgjEFuJp6A5_L8fxRT15CU4lGZanrJ53XOOEFNT0vm17qW1545BcGFMd_9l9VxwRMrZKeZFdsuyjgbJEVm1qnxmQRYhCPoJaNv5ELuyZ4PfnB2J0l-yFQZc98Kh47DJoCAO40nocwzcYO4VVvNZtXnJ5PfMmBNIffqtDbNAUFdqBshnOGwzF8kj4hIuOJuvOrfEkqNdD3yT32UmS-bM29Pze6EbyH6OTXQ1vPfQTPtp9sVIOiYDQADpXtZSuqUzry98TAgYBMETzlZCwfwy1q3St2XRyBXaQTaHUub5omy9iCdXNgDCJ9NuGsNos_34m_heDBEH_MsIsAznUNzpWQ; SERVERID=d3936289adfff6c3874a2579058ac651|1714318347|1714318347;'
-    seats = [{'lib_id': '10080', 'seat_key': '12,13.'}, {'lib_id': '10080', 'seat_key': '12,14.'},
-             {'lib_id': '10080', 'seat_key': '12,15.'}, {'lib_id': '10080', 'seat_key': '12,16.'},
-             {'lib_id': '10073', 'seat_key': '25,13.'}, {'lib_id': '10073', 'seat_key': '25,14.'}]
-    test_data = {'task_id': 1, 'wx_cookie': cookie, 'user_id': 1, 'seats': seats}
+    async def run_post_single(self,user_seat)->bool:
+        """
+        请求单个座位动作
+        :param user_seat:
+        :return:
+        """
+        ret = False
+        url = "https://wechat.v2.traceint.com/index.php/graphql/"
+        await self.ses.post(url=url,
+                            json=make_json_for_lib(lib_id=user_seat['lib_id']),
+                            headers=self.post_headers)
+        async with self.ses.post(
+                url=url,
+                json=make_json_for_seat(lib_id=user_seat['lib_id'],seat_key=user_seat['seat_key']),
+                headers=self.post_headers
+        ) as rep:
+            if "error" not in await rep.text():
+                ret = True
+            else:
+                log.warning(f'post-选座失败-user-{self.user_id}-detail-{ await rep.json() }')
+        await asyncio.sleep(self.post_sleep)
+        return ret
 
-    asyncio.run(book(**test_data))
+    async def run_post_with_list(self)->bool:
+        """
+        请求一组座位动作链
+        :return:
+        """
+        is_success = False
+        for seat in self.seats:
+            ret = await self.run_post_single(seat)
+            if ret == True:
+                is_success = True
+                break
+            
+        await self.ses.close()
+        return is_success
+
+    async def run_book_chain(self)->bool:
+        """
+        完整的抢座动作链
+        :return:
+        """
+        try:
+            ws_result = await self.run_ws()
+            if ws_result:
+                ret = await self.run_post_with_list()
+                if ret:
+                    await self.reduce_balance()
+                    await self.add_task_ret(1)
+                    return True
+                await self.add_task_ret(0)
+                return False
+        except asyncio.CancelledError:
+            await self.add_task_ret(0)
+            return False
+        finally:
+            if not self.ses.closed:
+                print('close')
+                await self.ses.close()

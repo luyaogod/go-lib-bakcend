@@ -1,111 +1,100 @@
-from book_task.book_func import book
 import asyncio
-from datetime import datetime
-from models import User,Task,Task_Ret,Task_Pool
-from api_funcs.user_func import user_all_seat,user_all_seats_clean
-from settings import orm_conf,TIME_PULL_TASK_FROM_POOL,TIME_WS_CONNECT
+from .book_func import Book
+from models import Task_Pool,User
+from typing import List,Tuple
 from tortoise import Tortoise
-from utils.clock import sleep_to
+from settings import orm_conf
+from utils.clock import clock
+from .book_log import log
+import uvloop
+from datetime import datetime
 
-async def init(host):
-    await Tortoise.init(
-        config=orm_conf(host)
-    )
+TIME_PULL_TASK = (19,59,0)
+TIME_WS_CONNECT = (19,59,59)
+TIME_WS_SEND = (20,0,0)
+SLEEP_WS=0.1
+SLEEP_POST=1
+WORKER_SIZE = 1
+WORKER_ID = 0
+TASKS_TIMEOUT=300
 
-async def pull_tasks(workers_size,worker_id):
-    task_list = []
-    #从池中获取任务
-    data_list = await Task_Pool.all().prefetch_related('task')
-    for data in data_list:
-        i = data.task
-        task_item = {}
-        task_item['task_id'] = i.id
-        task_item['wx_cookie'] = i.wx_cookie
-        task_item['user_id'] = i.user_id
-        user = await User.get_or_none(id=i.user_id)
-        if user == None:
-            task_item['seats'] = []
-        else:
-            data = await user_all_seat(user)
-            if data == None:
-                pass
-            else:
-                task_item['seats'] = await user_all_seats_clean(data)
-                task_list.append(task_item)
-    #负载均衡任务分配
-    distributed_tasks = []
-    for i in range(len(task_list)):
-        if i % workers_size == worker_id:
-            distributed_tasks.append(task_list[i])
-    return distributed_tasks
+class Worker():
+    def __init__(
+            self,
+            host:str,
+            worker_size:int=WORKER_SIZE,
+            worker_id:int=WORKER_ID,
+            pull_task_time:Tuple[int]=TIME_PULL_TASK,
+            ws_connect_time:Tuple[int]=TIME_WS_CONNECT,
+            ws_send_time:Tuple[int]=TIME_WS_SEND,
+            ws_sleep:int=SLEEP_WS,
+            post_sleep:int=SLEEP_POST,
+    )->None:
+        self.host = host
+        self.worker_size = worker_size
+        self.worker_id= worker_id
+        self.pull_task_time = pull_task_time
+        self.ws_connect_time = ws_connect_time
+        self.ws_send_time = ws_send_time
+        self.ws_sleep = ws_sleep
+        self.post_sleep = post_sleep
 
-async def tasks_worker(data_list):
-    tasks = []
-    for data in data_list:
-        task = asyncio.create_task(book(**data))
-        tasks.append(task)
-    if tasks == []: #今日没有任务
-        return []
-    else:
-        ret = await asyncio.gather(*tasks)
-    return ret
+    async def orm_init(self):
+        await Tortoise.init(
+            config=orm_conf(self.host)
+        )
 
-async def main(host,worker_size,worker_id):
-    worker_size = int(worker_size)
-    worker_id = int(worker_id)
-    print('[BOOKER SETUP]')
-    print(f"BOOKER SIZE: {worker_size}")
-    print(f'BOOKER ID: {worker_id}')
-    await init(host)
+    async def task_pull(self) -> List[int]:
+        today_all_task_users = []
+        data_list = await Task_Pool.all().prefetch_related('task')
+        for i in data_list:
+            data = i.task
+            today_all_task_users.append(data.user_id)
+        distributed_tasks = []
+        for i in range(len(today_all_task_users)):
+            if i % self.worker_size == self.worker_id:
+                distributed_tasks.append(today_all_task_users[i])
+        return distributed_tasks
 
-    print("[DB]:数据库连接测试...")
-    user = await User.get_or_none(username='mario')
-    if (user):
-        print(f'[DB]:数据库连接成功,{user.username}')
-    else:
-        print('[DB]:数据库连接出错')
+    async def single_task_chain(self,user_id:int)->bool:
+        Booker = Book(user_id=user_id)
+        Booker.post_sleep = self.post_sleep
+        Booker.ws_sleep =self.ws_sleep
+        Booker.ws_send_time = self.ws_send_time
+        await Booker.init()
+        if Booker.inited == False:
+            log.warning(f'Booker实例init调用失败-user-{Booker.user_id}')
+            return False
+        ret = await Booker.run_book_chain()
+        return ret
+            
+    async def main(self):
+        log.info('BOOKER启动')
+        log.info(f"BOOKER-SIZE: {self.worker_size}")
+        log.info(f'BOOKER-ID: {self.worker_id}')
+        log.info('正在测试数据库...')
+        await self.orm_init()
+        while True:
+            admin = await User.get_or_none(id=1)
+            if admin:
+                log.info(f'数据库测试成功-admin-{admin.username}')
 
-    while True:
-        print("[DB]:数据库连接测试...")
-        user = await User.get_or_none(username='mario')
-        if (user):
-            print(f'[DB]:数据库连接成功,{user.username}')
-        else:
-            print('[DB]:数据库连接出错')
 
-        # 任务拉取和分配
-        now = datetime.now()
-        pull_time = datetime(now.year, now.month, now.day, *TIME_PULL_TASK_FROM_POOL)
-        await sleep_to(pull_time)
-        print("[开始装载任务列表]",datetime.now())
-        try:
-            data_list = await pull_tasks(worker_size,worker_id)
-            # print(data_list) #测试输出
-        except Exception as e:
-            data_list = []
-            print("[book_task-truck-error]:",e)
-        # print(data_list)
+            await clock(self.pull_task_time)
+            log.info(f'{datetime.now()}-正在拉取任务')
+            user_id_list = await self.task_pull()
+            
+            await clock(self.ws_connect_time)
+            log.info(f'{datetime.now()}-开始创建任务并运行至连接WS服务器')
+            ret = asyncio.gather(
+                *[self.single_task_chain(user_id) for user_id in user_id_list]
+            )
+            try:
+                await asyncio.wait_for(ret, timeout=TASKS_TIMEOUT)
+            except asyncio.TimeoutError:
+                log.warning('任务超时！')
 
-        #抢座tasks创建
-        connect_time = datetime(now.year, now.month, now.day, *TIME_WS_CONNECT)
-        await sleep_to(connect_time)
-        print("[开始连接WS]",datetime.now())
-        ret =  await tasks_worker(data_list)
+        # await asyncio.sleep(3000) #仅测试使用！
 
-        #更新数据库任务执行状态
-        print("[更新数据库任务状态]",datetime.now())
-        for r in ret:
-            print("[任务状态]:",r)
-            task = await Task.get_or_none(id = r["task_id"])
-            if task:
-                user = await User.get_or_none(pk=task.user_id)
-                if r["result"]:
-                    #任务成功
-                    await Task_Ret.create(user=user, time=datetime.now().date(), status=1)
-                    user.balance -= 1
-                    await user.save()
-                else:
-                    #任务失败
-                    await Task_Ret.create(user=user, time=datetime.now().date(), status=0)
-        print("[今日任务结束]", datetime.now())
-        # await asyncio.sleep(3600) #测试使用!!!!!!
+    def setup(self):
+        uvloop.run(self.main())
