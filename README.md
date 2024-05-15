@@ -1,22 +1,12 @@
-### fast-api server启动指令
+### 启动命令
 ```bash
+#后端服务
 docker compose -f docker-compose.server.yml up -d
 
-docker exec -it bash backend
+#手动初始DB数据
+docker exec -it backend bash
+python3 db_init.py
 
-docker pyhton3 db_init.py
-```
-
-### 通过shell脚本启动fast-api server
-```bash
-chmod +x start.sh
-./start.sh
-```
-
-### 抢座进程启动指令
-```bash
+#booker进程和pool进程
 docker compose -f docker-compose.booker.yml up -d
-
-DB_HOST=47.94.172.195 \
-docker compose -f docker-compose.morning.yml up -d
 ```
