@@ -5,6 +5,15 @@ services:
     container_name: booker
     build: .
     restart: always
-    command: bash -c "python3 -u book_main.py ${DB_HOST} ${BOOKER_SIZE} ${BOOKER_ID}"
+    command: bash -c "python3 -u setup.py booker --host ${DB_HOST} --worker_size ${WORKER_SIZE} --worker_id ${WORKER_ID}"
     volumes:
       - .:/app
+
+  pool:
+    container_name: pool
+    build: .
+    restart: always
+    command: bash -c "python3 -u setup.py pool --host ${DB_HOST}"
+    volumes:
+      - .:/app
+  
