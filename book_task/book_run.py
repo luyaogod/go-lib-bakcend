@@ -1,13 +1,13 @@
 import asyncio
+import uvloop
 from .book_func import Book
-from models import Task_Pool,User
 from typing import List,Tuple
 from tortoise import Tortoise
 from settings import orm_conf
 from utils.clock import clock
-import uvloop
-import logging
 from datetime import datetime
+from models import Task_Pool,User
+from settings import mlog
 
 TIME_PULL_TASK = (19,59,0)
 TIME_WS_CONNECT = (19,59,59)
@@ -30,7 +30,7 @@ class Worker():
             ws_sleep:int=SLEEP_WS,
             post_sleep:int=SLEEP_POST,
     )->None:
-        self.log = logging.getLogger(__name__)
+        self.log = mlog
         self.host = host
         self.worker_size = worker_size
         self.worker_id= worker_id

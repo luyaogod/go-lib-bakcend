@@ -8,7 +8,6 @@ from tortoise.exceptions import OperationalError, DoesNotExist, IntegrityError, 
 from utils import exception
 from fastapi.middleware.cors import CORSMiddleware
 from cookies_keeper import register_cookie_keeper
-import logging
 
 
 app = FastAPI()
@@ -27,10 +26,6 @@ app.add_exception_handler(DoesNotExist, exception.mysql_does_not_exist)
 app.add_exception_handler(IntegrityError, exception.mysql_integrity_error)
 app.add_exception_handler(ValidationError, exception.mysql_validation_error)
 app.add_exception_handler(OperationalError, exception.mysql_operational_error)
-
-
-#获取uvicorn日志实例
-logger = logging.getLogger('uvicorn')
 
 
 #注册数据库

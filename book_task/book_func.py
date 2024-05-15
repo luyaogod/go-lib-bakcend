@@ -4,7 +4,6 @@ from typing import Optional,List,Tuple
 from utils.clock import clock
 from .book_utils import make_ws_headers,make_post_headers,make_json_for_lib,make_json_for_seat
 import asyncio
-import logging
 from datetime import datetime
 
 WS_ERROR_FAIL_COOKIE = r'{"ns":"prereserve\/queue","msg":1000}'
@@ -84,7 +83,7 @@ class Book(UserObj):
     """
     def __init__(
             self,
-            log:logging.getLogger,
+            log,
             user_id: int,
             ws_send_time: Tuple[int] = (20,0,0),
             ws_size = 100,

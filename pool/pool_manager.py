@@ -1,9 +1,10 @@
-from models import Task_Pool,User,Task
+import uvloop
 from tortoise import Tortoise
 from settings import orm_conf
 from utils.clock import clock
-import uvloop
-import logging
+from models import Task_Pool,User,Task
+from settings import mlog
+
 
 #settings
 TIME_PUSH_EVE_TASK = (19,55,0)
@@ -11,7 +12,7 @@ TIME_CLEAN_EVE_POOL = (20,5,0)
 
 class PoolM():
     def __init__(self,host:str) -> None:
-        self._log = logging.getLogger(__name__)
+        self._log = mlog
         self.db_host = host
         self.time_push_task = TIME_PUSH_EVE_TASK
         self.time_clean_pool = TIME_CLEAN_EVE_POOL

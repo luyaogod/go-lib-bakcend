@@ -1,8 +1,13 @@
 import asyncio
 import logging
 
-#log
-logging.basicConfig(format='%(asctime)s %(levelname)s:  %(message)s', level=logging.INFO)
+#我的log
+mlog = logging.getLogger('mlog')
+mlog.setLevel(logging.INFO)
+handler = logging.StreamHandler()
+formatter = logging.Formatter('%(asctime)s %(levelname)s:  %(message)s')
+handler.setFormatter(formatter)
+mlog.addHandler(handler)
 
 #TORTOISE_ORM数据库配置
 def orm_conf(host):
