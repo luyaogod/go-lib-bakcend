@@ -15,7 +15,7 @@ services:
     container_name: backend
     build: .
     restart: always
-    command: bash -c "python3 -u main.py"
+    command: bash -c "python3 -u setup.py main"
     volumes:
       - .:/app
     ports:

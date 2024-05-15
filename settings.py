@@ -1,4 +1,8 @@
 import asyncio
+import logging
+
+#log
+logging.basicConfig(format='%(asctime)s %(levelname)s:  %(message)s', level=logging.INFO)
 
 #TORTOISE_ORM数据库配置
 def orm_conf(host):
@@ -26,7 +30,7 @@ def orm_conf(host):
     }
     return conf
 
-# TORTOISE_ORM = orm_conf("localhost")
+# TORTOISE_ORM = orm_conf("localhost") #test
 TORTOISE_ORM = orm_conf("db")
 
 
@@ -40,19 +44,6 @@ USER_SEAT_SIZE = 6
 ADMIN_NAME = 'mario'
 
 ADMIN_UUID = '6f981e3e-73d4-4701-9296-28ffafc0e8eb'
-
-
-#后台抢座任务时间控制
-TIME_PUSH_TASK_IN_POOL = [19,59,0]
-TIME_PULL_TASK_FROM_POOL = [19,59,10]
-TIME_WS_CONNECT = [19,59,59]
-TIME_BOOK_GO = [20,00,00]
-TIME_CLEAR_POOL = [20,5,0]
-
-#早晨抢座任务时间控制
-TIME_PULL_MORNING_TASK_FROM_POOL=[6,29,50]
-TIME_MORNING_BOOK_GO=[6,30,0]
-TIME_CLEAR_MORNING_TASK_POOL = [6,35,0]
 
 #全局队列
 QUEUE = asyncio.Queue()

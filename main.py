@@ -8,7 +8,6 @@ from tortoise.exceptions import OperationalError, DoesNotExist, IntegrityError, 
 from utils import exception
 from fastapi.middleware.cors import CORSMiddleware
 from cookies_keeper import register_cookie_keeper
-from task_pool_worker import register_task_pool,register_morning_pool_clean
 import logging
 
 
@@ -40,14 +39,6 @@ register_tortoise(app=app,config=TORTOISE_ORM)
 
 #注册cookie保活程序
 register_cookie_keeper(app=app)
-
-
-#注册任务池
-register_task_pool(app=app,logger=logger)
-
-
-#注册morning任务池清理
-register_morning_pool_clean(app=app,logger=logger)
 
 
 #跨域

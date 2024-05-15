@@ -5,8 +5,8 @@ from typing import List,Tuple
 from tortoise import Tortoise
 from settings import orm_conf
 from utils.clock import clock
-from .book_log import log
 import uvloop
+import logging
 from datetime import datetime
 
 TIME_PULL_TASK = (19,59,0)
@@ -30,6 +30,7 @@ class Worker():
             ws_sleep:int=SLEEP_WS,
             post_sleep:int=SLEEP_POST,
     )->None:
+        self.log = logging.getLogger(__name__)
         self.host = host
         self.worker_size = worker_size
         self.worker_id= worker_id
@@ -57,47 +58,47 @@ class Worker():
         return distributed_tasks
 
     async def single_task_chain(self,user_id:int)->bool:
-        Booker = Book(user_id=user_id)
+        Booker = Book(user_id=user_id,log=self.log)
         Booker.post_sleep = self.post_sleep
         Booker.ws_sleep =self.ws_sleep
         Booker.ws_send_time = self.ws_send_time
         await Booker.init()
         if Booker.inited == False:
-            log.warning(f'Booker实例init调用失败-user-{Booker.user_id}')
+            self.log.warning(f'Booker实例init调用失败-user-{Booker.user_id}')
             return False
         ret = await Booker.run_book_chain()
         return ret
             
     async def main(self):
-        log.info('BOOKER启动')
-        log.info(f"BOOKER-SIZE: {self.worker_size}")
-        log.info(f'BOOKER-ID: {self.worker_id}')
-        log.info(f"PULL_TIME:{self.pull_task_time}")
-        log.info(f"WS_CONNECT_TIME:{self.ws_connect_time}")
-        log.info(f"WS_SEND_TIME:{self.ws_send_time}")
-        log.info('正在测试数据库...')
+        self.log.info('BOOKER启动')
+        self.log.info(f"HOST:{self.host}")
+        self.log.info(f"BOOKER-SIZE: {self.worker_size}")
+        self.log.info(f'BOOKER-ID: {self.worker_id}')
+        self.log.info(f"TIME-PULL-TASK:{self.pull_task_time}")
+        self.log.info(f"TIME-WS-CONNECT:{self.ws_connect_time}")
+        self.log.info(f"TIME-WS-SEND:{self.ws_send_time}")
+        self.log.info('正在测试数据库...')
         await self.orm_init()
         await self.orm_init()
         await self.orm_init()
         while True:
             admin = await User.get_or_none(id=1)
             if admin:
-                log.info(f'数据库测试成功-admin-{admin.username}')
-
+                self.log.info(f'数据库测试成功-admin-{admin.username}')
 
             await clock(self.pull_task_time)
-            log.info(f'{datetime.now()}-正在拉取任务')
+            self.log.info(f'{datetime.now()}-正在拉取任务')
             user_id_list = await self.task_pull()
             
             await clock(self.ws_connect_time)
-            log.info(f'{datetime.now()}-开始创建任务并运行至连接WS服务器')
+            self.log.info(f'{datetime.now()}-开始创建任务并运行至连接WS服务器')
             ret = asyncio.gather(
                 *[self.single_task_chain(user_id) for user_id in user_id_list]
             )
             try:
                 await asyncio.wait_for(ret, timeout=TASKS_TIMEOUT)
             except asyncio.TimeoutError:
-                log.warning('任务超时！')
+                self.log.warning('任务超时！')
 
         # await asyncio.sleep(3000) #仅测试使用！
 

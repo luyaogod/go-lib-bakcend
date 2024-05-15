@@ -2,9 +2,9 @@ import aiohttp
 from models import User,Task,Task_Ret
 from typing import Optional,List,Tuple
 from utils.clock import clock
-from .book_log import log
 from .book_utils import make_ws_headers,make_post_headers,make_json_for_lib,make_json_for_seat
 import asyncio
+import logging
 from datetime import datetime
 
 WS_ERROR_FAIL_COOKIE = r'{"ns":"prereserve\/queue","msg":1000}'
@@ -84,6 +84,7 @@ class Book(UserObj):
     """
     def __init__(
             self,
+            log:logging.getLogger,
             user_id: int,
             ws_send_time: Tuple[int] = (20,0,0),
             ws_size = 100,
@@ -91,6 +92,7 @@ class Book(UserObj):
             post_sleep = 1,
     )->None:
         super().__init__(user_id)
+        self.log = log
         self.seats = None
         self.cookie = None
         self.ws_headers = None
@@ -128,21 +130,21 @@ class Book(UserObj):
                 data = await ws.receive()
                 if data.type == aiohttp.WSMsgType.TEXT:
                     if count == 0:
-                        log.info(f'ws-排队名次{data.json()}')
+                        self.log.info(f'ws-排队名次{data.json()}')
                 if data.data == WS_ERROR_FAIL_COOKIE:
-                    log.warning(f"ws-cookie失效-user-{self.user_id}")
+                    self.log.warning(f"ws-cookie失效-user-{self.user_id}")
                     break
                 if data.data == WS_SUCCESS_QUEUE:
-                    log.info('ws-排队成功')
+                    self.log.info('ws-排队成功')
                     result = True
                     break
                 if WS_SUCCESS_BOOK in data.data:
-                    log.info('ws-已预约座位')
+                    self.log.info('ws-已预约座位')
                     break
                 await asyncio.sleep(self.ws_sleep)
                 count += 1
             if count >= self.ws_size:
-                log.warning('ws-排队超时')
+                self.log.warning('ws-排队超时')
             await ws.close()
         return result
 
@@ -165,7 +167,7 @@ class Book(UserObj):
             if "error" not in await rep.text():
                 ret = True
             else:
-                log.warning(f'post-选座失败-user-{self.user_id}-detail-{ await rep.json() }')
+                self.log.warning(f'post-选座失败-user-{self.user_id}-detail-{ await rep.json() }')
         await asyncio.sleep(self.post_sleep)
         return ret
 
@@ -204,5 +206,4 @@ class Book(UserObj):
             return False
         finally:
             if not self.ses.closed:
-                print('close')
                 await self.ses.close()
