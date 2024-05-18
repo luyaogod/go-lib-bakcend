@@ -17,6 +17,7 @@ SLEEP_POST=1
 WORKER_SIZE = 1
 WORKER_ID = 0
 TASKS_TIMEOUT=300
+WS_SIZE=120
 
 class Worker():
     def __init__(
@@ -29,6 +30,7 @@ class Worker():
             ws_send_time:Tuple[int]=TIME_WS_SEND,
             ws_sleep:int=SLEEP_WS,
             post_sleep:int=SLEEP_POST,
+            ws_size:int=WS_SIZE,
     )->None:
         self.log = mlog
         self.host = host
@@ -39,6 +41,7 @@ class Worker():
         self.ws_send_time = ws_send_time
         self.ws_sleep = ws_sleep
         self.post_sleep = post_sleep
+        self.ws_size = ws_size
 
     async def orm_init(self):
         await Tortoise.init(
@@ -62,6 +65,7 @@ class Worker():
         Booker.post_sleep = self.post_sleep
         Booker.ws_sleep =self.ws_sleep
         Booker.ws_send_time = self.ws_send_time
+        Booker.ws_size = self.ws_size
         await Booker.init()
         if Booker.inited == False:
             self.log.warning(f'Booker实例init调用失败-user-{Booker.user_id}')
@@ -74,6 +78,7 @@ class Worker():
         self.log.info(f"HOST:{self.host}")
         self.log.info(f"BOOKER-SIZE: {self.worker_size}")
         self.log.info(f'BOOKER-ID: {self.worker_id}')
+        self.log.info(f"SET-WS-SIZE:{self.ws_size}")
         self.log.info(f"TIME-PULL-TASK:{self.pull_task_time}")
         self.log.info(f"TIME-WS-CONNECT:{self.ws_connect_time}")
         self.log.info(f"TIME-WS-SEND:{self.ws_send_time}")
