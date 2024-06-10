@@ -1,5 +1,6 @@
 import time
 import pymysql
+from pymysql.connections import Connection
 import requests
 import datetime
 import websocket
@@ -158,24 +159,29 @@ class DailyTasks():
         pull_task_time:tuple = TIME_PULL_TASK,  #提前30秒拉取任务
         ws_connect_time:tuple = TIME_WS_CONNECT, #提前两秒连接ws
         cancel_time:tuple = TIME_CANCEL_SEAT,
-        db_config=PyMysql_DB_CONFIG
     ) -> None:
         self._pull_task_time=pull_task_time
         self._ws_connect_time=ws_connect_time
         self._cancel_time = cancel_time
-        self.db_connection = pymysql.connect(
-            host=db_config['host'],
-            user=db_config['user'],
-            password=db_config['password'],
-            database=db_config['database'],
-            cursorclass=pymysql.cursors.DictCursor
-        )
-    
+        self._db_config=PyMysql_DB_CONFIG
+        log.debug(TIME_PULL_TASK)
     #每日任务拉取和数据处理相关sql--------------------------------------------------------------------------
 
-    def task_pull(self) -> list[int]:
+    def db(self)->Connection:
+        """创建数据库连接"""
+        connection =  pymysql.connect(
+            host=self._db_config['host'],
+            user=self._db_config['user'],
+            password=self._db_config['password'],
+            database=self._db_config['database'],
+            cursorclass=pymysql.cursors.DictCursor
+        )
+        return connection
+
+
+    def task_pull(self, db:Connection) -> list[int]:
         """拉取每日任务user_id"""
-        with self.db_connection.cursor() as cursor:
+        with self.db.cursor() as cursor:
             sql = """
             SELECT user_id FROM task
             WHERE status = 1 AND open = 1
@@ -189,12 +195,12 @@ class DailyTasks():
             else:
                 return []
             
-    def task_pull_user_id_and_wx_cookie(self):
+    def task_pull_user_id_and_wx_cookie(self, db:Connection):
         """
         拉取每日任务包含user_id和wx_cookie\n
         return [{'user_id':,'wx_cookie':}]
         """
-        with self.db_connection.cursor() as cursor:
+        with db.cursor() as cursor:
             sql = """
             SELECT user_id,wx_cookie FROM task
             WHERE status = 1 AND open = 1
@@ -205,10 +211,10 @@ class DailyTasks():
             data_list = cursor.fetchall()
             return data_list
 
-    def get_users_seats(self, user_ids):
+    def get_users_seats(self, user_ids, db:Connection):
         """获取多个用户的座位表"""
         placeholders = ','.join(['%s'] * len(user_ids))  # 根据user_ids的数量创建占位符字符串
-        with self.db_connection.cursor(pymysql.cursors.DictCursor) as cursor:
+        with db.cursor(pymysql.cursors.DictCursor) as cursor:
             cursor.execute(f"""
                 SELECT su.user_id, s.seat_key, l.lib_id
                 FROM seat s
@@ -218,10 +224,10 @@ class DailyTasks():
             """, user_ids)  # 使用列表解包提供所有user_id作为参数
             return cursor.fetchall()
 
-    def get_users_cookie(self, user_ids):
+    def get_users_cookie(self, user_ids, db:Connection):
         """获取多个用户的cookie"""
         placeholders = ','.join(['%s'] * len(user_ids))  # 根据user_ids的数量创建占位符字符串
-        with self.db_connection.cursor(pymysql.cursors.DictCursor) as cursor:
+        with db.cursor(pymysql.cursors.DictCursor) as cursor:
             cursor.execute(f"""
                 SELECT su.user_id, s.seat_key, l.lib_id
                 FROM seat s
@@ -254,18 +260,18 @@ class DailyTasks():
 
         return organized_results
     
-    def pull_task_do_chain(self):
+    def pull_task_do_chain(self, db:Connection):
         """
         拉取每日任务数据并封装\n
         return [{"user_id":, "seats":, "cookie": }]
         """
         # 拉取每日任务包含user_id和wx_cookie
-        data_id_and_cookie = self.task_pull_user_id_and_wx_cookie()
+        data_id_and_cookie = self.task_pull_user_id_and_wx_cookie(db=db)
         user_ids = [item['user_id'] for item in data_id_and_cookie]
         #将user_id映射到wx_cookie
         user_id_to_cookie = {item['user_id']: item['wx_cookie'] for item in data_id_and_cookie}
         # 获取多个用户的座位表
-        user_seats_row = self.get_users_seats(user_ids)
+        user_seats_row = self.get_users_seats(user_ids=user_ids, db=db)
         # 封装user_id和seats
         user_id_and_seats = self.organize_seats_by_user_id(user_seats_row)
         # 使用user_id_to_cookie字典来分配cookie给相应的用户
@@ -276,42 +282,43 @@ class DailyTasks():
         return user_id_and_seats
     
     #任务结果处理相关sql----------------------------------------------------------------------------------
-    def query_usernames_by_userids(self, userids:list[int])->None:
+    def query_usernames_by_userids(self, userids: list[int], db: Connection) -> None:
         try:
-            with self.db_connection.cursor() as cursor:
-                sql = f"""SELECT username FROM user WHERE id IN {tuple(userids)};"""
-                cursor.execute(sql)
+            with db.cursor() as cursor:
+                format_strings = ','.join(['%s'] * len(userids))
+                sql = f"""SELECT username FROM user WHERE id IN ({format_strings});"""
+                cursor.execute(sql, userids)
                 data_list = cursor.fetchall()
                 log.info('今日任务-{}'.format([data['username'] for data in data_list]))
         except Exception as e:
             log.warning(f"username查询失败{e}")
 
-    def bulk_reduce_balance(self, user_ids)->None:
+    def bulk_reduce_balance(self, user_ids, db:Connection)->None:
         """批量用户余额-1，使用参数化查询防止SQL注入"""
         if not user_ids:  # 如果列表为空，直接返回
             return
         placeholders = ','.join(['%s'] * len(user_ids))
         query = f"UPDATE user SET balance = balance - 1 WHERE id IN ({placeholders})"
-        with self.db_connection.cursor() as cursor:
+        with db.cursor() as cursor:
             cursor.execute(query, user_ids)
-            self.db_connection.commit()
+            db.commit()
 
-    def bulk_add_task_ret(self, user_ids, status)->None:
+    def bulk_add_task_ret(self, user_ids, status, db:Connection)->None:
         """批量添加任务结果记录"""
         if not user_ids:  # 如果列表为空，直接返回
             return
         current_time = datetime.datetime.now().date()
         values = ', '.join([f"({user_id}, '{current_time}', {status})" for user_id in user_ids])
         query = f"INSERT INTO task_ret (user_id, time, status) VALUES {values}"
-        with self.db_connection.cursor() as cursor:
+        with db.cursor() as cursor:
             cursor.execute(query)
-            self.db_connection.commit()
+            db.commit()
 
     #座位取消--------------------------------------------------------------------------
 
-    def pull_cookies(self):
+    def pull_cookies(self, db:Connection):
         """拉取cookie列表sql"""
-        with self.db_connection.cursor(pymysql.cursors.DictCursor) as cursor:
+        with db.cursor(pymysql.cursors.DictCursor) as cursor:
                 sql = """SELECT wx_cookie FROM task WHERE wx_cookie LIKE 'Authorization=%';"""
                 cursor.execute(sql)
                 data_list = cursor.fetchall()
@@ -335,9 +342,9 @@ class DailyTasks():
         rep = requests.post(url=url, headers=headers, json=payload2)
         log.debug(rep.json())
 
-    def cancel_seats(self):
+    def cancel_seats(self, db:Connection):
         """拉取cookie列表取消全部座位"""
-        cookies = self.pull_cookies()
+        cookies = self.pull_cookies(db=db)
         for cookie in cookies:
             try:
                 self.cancel_seat(cookie)
@@ -351,31 +358,34 @@ class DailyTasks():
         log.info("进程启动")
         log.info(f"HOST: {PyMysql_DB_CONFIG}")
         while True:
-            # 数据库测试
-            with self.db_connection.cursor() as cursor:
+            # 数据库测试-----------------------------------------------------------------------
+            test_db_connect = self.db()
+            with test_db_connect.cursor() as cursor:
                 cursor.execute("SELECT * FROM user WHERE id = 1")
                 admin = cursor.fetchone()
                 if admin:
                     log.info(f'数据库测试成功-{admin["username"]}')
                 else:
                     raise ValueError("数据库初始化失败")
+            test_db_connect.close()
             
-            # 拉取任务
+            # 拉取任务-------------------------------------------------------------------------
             clock_sync(self._pull_task_time)
-            data = self.pull_task_do_chain()
+            pull_taask_db_connect = self.db()
+            data = self.pull_task_do_chain(db =pull_taask_db_connect)
             ids = [item['user_id'] for item in data]
-            self.query_usernames_by_userids(ids) #输出username
-        
+            self.query_usernames_by_userids(userids=ids, db=pull_taask_db_connect) #输出username
+            pull_taask_db_connect.close()
             #创建booker实例
             bookers = []
             for item in data:
                 bookers.append(Booker(**item))
             
+            # 创建任务---------------------------------------------------------------------------
+            # 任务执行至完成ws连接并发送预请求
             success_user_ids = []
             failed_user_ids = []
             time_out_ids = []
-            
-            # 创建任务，任务执行至完成ws连接并发送预请求
             clock_sync(self._ws_connect_time) 
             with concurrent.futures.ThreadPoolExecutor(max_workers=30) as executor:
                 # 创建一个映射，将每个future与其对应的user_id关联起来
@@ -400,24 +410,29 @@ class DailyTasks():
                     log.warning(f"取消超时任务-结果：{future.cancel()}")
                 
                 failed_user_ids.extend(time_out_ids)
-            # 一次性减少成功用户的余额
             log.info(f"success:{success_user_ids}")
             log.info(f"fail:{failed_user_ids}")
+
+            #数据库保存结果------------------------------------------------------------------------
+            ret_store_db_connect = self.db()
             try:
-                self.bulk_reduce_balance(success_user_ids)
+                #余额扣除
+                self.bulk_reduce_balance(userids=success_user_ids, db=ret_store_db_connect)
             except Exception as e:
                 log.warning(f"余额扣除sql程序报错:{e}")
-            # 一次性插入成功和失败的任务记录
             try:
-                self.bulk_add_task_ret(success_user_ids, 1)  # 1 表示成功
-                self.bulk_add_task_ret(failed_user_ids, 0)  # 0 表示失败
+                #保存结果
+                self.bulk_add_task_ret(success_user_ids, 1, ret_store_db_connect)  # 1 表示成功
+                self.bulk_add_task_ret(failed_user_ids, 0, ret_store_db_connect)  # 0 表示失败
             except Exception:
                 log.warning(f"结果存储sql程序报错:{e}")
+            ret_store_db_connect.close()
             
-            # 清理座位
+            # 清理座位-----------------------------------------------------------------------------
             clock_sync(self._cancel_time)
+            clean_seats_db_connect = self.db()
             log.info("正在执行座位清理...")
-            self.cancel_seats()
+            self.cancel_seats(db=clean_seats_db_connect)
             log.info("座位清理完成.")
 
             # time.sleep(3600) #仅测试
