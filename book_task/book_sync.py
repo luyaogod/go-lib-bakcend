@@ -165,6 +165,7 @@ class DailyTasks():
         self._cancel_time = cancel_time
         self._db_config=PyMysql_DB_CONFIG
         log.debug(TIME_PULL_TASK)
+    
     #每日任务拉取和数据处理相关sql--------------------------------------------------------------------------
 
     def db(self)->Connection:
@@ -417,7 +418,7 @@ class DailyTasks():
             ret_store_db_connect = self.db()
             try:
                 #余额扣除
-                self.bulk_reduce_balance(userids=success_user_ids, db=ret_store_db_connect)
+                self.bulk_reduce_balance(user_ids=success_user_ids, db=ret_store_db_connect)
             except Exception as e:
                 log.warning(f"余额扣除sql程序报错:{e}")
             try:
