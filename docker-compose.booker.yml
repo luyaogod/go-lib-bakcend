@@ -5,7 +5,7 @@ services:
     container_name: booker
     build: .
     restart: always
-    command: bash -c "python3 -u setup.py booker --host ${DB_HOST}"
+    command: bash -c "python3 -u setup.py booker --host ${DB_HOST} --id ${WOKER_ID} --size ${WOKER_SIZE}"
     volumes:
       - .:/app
 

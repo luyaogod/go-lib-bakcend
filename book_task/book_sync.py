@@ -156,10 +156,14 @@ class DailyTasks():
     """每日任务"""
     def __init__(
         self,
+        worker_id:int, #服务器id，从0开始
+        worker_size:int,  #服务器总数
         pull_task_time:tuple = TIME_PULL_TASK,  #提前30秒拉取任务
         ws_connect_time:tuple = TIME_WS_CONNECT, #提前两秒连接ws
         cancel_time:tuple = TIME_CANCEL_SEAT,
     ) -> None:
+        self._worker_id = worker_id
+        self._worker_size = worker_size
         self._pull_task_time=pull_task_time
         self._ws_connect_time=ws_connect_time
         self._cancel_time = cancel_time
@@ -179,10 +183,9 @@ class DailyTasks():
         )
         return connection
 
-
     def task_pull(self, db:Connection) -> list[int]:
         """拉取每日任务user_id"""
-        with self.db.cursor() as cursor:
+        with db.cursor() as cursor:
             sql = """
             SELECT user_id FROM task
             WHERE status = 1 AND open = 1
@@ -195,7 +198,7 @@ class DailyTasks():
                 return [data['user_id'] for data in data_list]
             else:
                 return []
-            
+    
     def task_pull_user_id_and_wx_cookie(self, db:Connection):
         """
         拉取每日任务包含user_id和wx_cookie\n
@@ -211,6 +214,14 @@ class DailyTasks():
             cursor.execute(sql)
             data_list = cursor.fetchall()
             return data_list
+
+    def task_assiginment(self, datas:list):
+        """任务分配，取余计算，需要传入task_pull_user_id_and_wx_cookie的结果，"""
+        datas_validated = []
+        for index, value in enumerate(datas):
+            if ((index+1)%self._worker_size == self._worker_id):
+                datas_validated.append(value)
+        return datas_validated
 
     def get_users_seats(self, user_ids, db:Connection):
         """获取多个用户的座位表"""
@@ -267,10 +278,12 @@ class DailyTasks():
         return [{"user_id":, "seats":, "cookie": }]
         """
         # 拉取每日任务包含user_id和wx_cookie
-        data_id_and_cookie = self.task_pull_user_id_and_wx_cookie(db=db)
-        user_ids = [item['user_id'] for item in data_id_and_cookie]
+        all_datas = self.task_pull_user_id_and_wx_cookie(db=db)
+        v_datas = self.task_assiginment(all_datas)
+        user_ids = [item['user_id'] for item in v_datas]
+        log.debug(f"当前服务器任务:{user_ids}")
         #将user_id映射到wx_cookie
-        user_id_to_cookie = {item['user_id']: item['wx_cookie'] for item in data_id_and_cookie}
+        user_id_to_cookie = {item['user_id']: item['wx_cookie'] for item in v_datas}
         # 获取多个用户的座位表
         user_seats_row = self.get_users_seats(user_ids=user_ids, db=db)
         # 封装user_id和seats
@@ -358,6 +371,8 @@ class DailyTasks():
         """批量抢座、座位取消主程序"""
         log.info("进程启动")
         log.info(f"HOST: {PyMysql_DB_CONFIG}")
+        log.info(f"WORKER_ID: {self._worker_id}")
+        log.info(f"WORKER_SIZE: {self._worker_size}")
         while True:
             # 数据库测试-----------------------------------------------------------------------
             test_db_connect = self.db()
@@ -431,17 +446,18 @@ class DailyTasks():
             
             # 清理座位-----------------------------------------------------------------------------
             clock_sync(self._cancel_time)
-            clean_seats_db_connect = self.db()
-            log.info("正在执行座位清理...")
-            self.cancel_seats(db=clean_seats_db_connect)
-            log.info("座位清理完成.")
+            if self._worker_id == 0: #仅允许worker0处理座位清理
+                clean_seats_db_connect = self.db()
+                log.info("正在执行座位清理...")
+                self.cancel_seats(db=clean_seats_db_connect)
+                log.info("座位清理完成.")
 
             # time.sleep(3600) #仅测试
 
-def setup(host:str):
+def setup(host:str ,worker_id:int, worker_size:int)->None:
     global PyMysql_DB_CONFIG
     PyMysql_DB_CONFIG[host]=host
-    DT = DailyTasks()
+    DT = DailyTasks(worker_id=worker_id, worker_size=worker_size)
     DT.main_loop()
 
 

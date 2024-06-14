@@ -3,7 +3,7 @@ import logging
 
 #我的log
 mlog = logging.getLogger('mlog')
-mlog.setLevel(logging.INFO)
+mlog.setLevel(logging.DEBUG)
 handler = logging.StreamHandler()
 formatter = logging.Formatter('%(asctime)s %(levelname)s:  %(message)s')
 handler.setFormatter(formatter)
