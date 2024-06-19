@@ -1,13 +1,12 @@
 import asyncio
 import uvloop
+import aiohttp
 from .book_func import Book
-from typing import List,Tuple
 from tortoise import Tortoise
 from settings import orm_conf
 from utils.clock import clock
-from datetime import datetime
-from models import Task_Pool,User
-from settings import mlog
+from models import Task_Pool
+from settings import mlog as log
 
 TIME_PULL_TASK = (19,59,0)
 TIME_WS_CONNECT = (19,59,59)
@@ -19,36 +18,27 @@ WORKER_ID = 0
 TASKS_TIMEOUT=300
 WS_SIZE=120
 
-class Worker():
-    def __init__(
-            self,
-            host:str,
-            worker_size:int=WORKER_SIZE,
-            worker_id:int=WORKER_ID,
-            pull_task_time:Tuple[int]=TIME_PULL_TASK,
-            ws_connect_time:Tuple[int]=TIME_WS_CONNECT,
-            ws_send_time:Tuple[int]=TIME_WS_SEND,
-            ws_sleep:int=SLEEP_WS,
-            post_sleep:int=SLEEP_POST,
-            ws_size:int=WS_SIZE,
-    )->None:
-        self.log = mlog
-        self.host = host
-        self.worker_size = worker_size
-        self.worker_id= worker_id
-        self.pull_task_time = pull_task_time
-        self.ws_connect_time = ws_connect_time
-        self.ws_send_time = ws_send_time
-        self.ws_sleep = ws_sleep
-        self.post_sleep = post_sleep
-        self.ws_size = ws_size
-
-    async def orm_init(self):
-        await Tortoise.init(
-            config=orm_conf(self.host)
+async def main_loop(
+        host:str,
+        worker_size:int=WORKER_SIZE,
+        worker_id:int=WORKER_ID,
+):
+    await Tortoise.init(
+            config=orm_conf(host)
         )
+    
+    log.info('BOOKER启动')
+    log.info(f"HOST:{host}")
+    log.info(f"BOOKER-SIZE: {worker_size}")
+    log.info(f'BOOKER-ID: {worker_id}')
+    log.info(f"TIME-WS-SEND:{TIME_WS_SEND}")
+    
+    while True:
+    #任务拉取分配
+        await clock(TIME_PULL_TASK)
+        connector = aiohttp.TCPConnector(limit_per_host=30)
+        ses = aiohttp.ClientSession(connector=connector)
 
-    async def task_pull(self) -> List[int]:
         today_all_task_users = []
         data_list = await Task_Pool.all().prefetch_related('task')
         for i in data_list:
@@ -56,56 +46,57 @@ class Worker():
             today_all_task_users.append(data.user_id)
         distributed_tasks = []
         for i in range(len(today_all_task_users)):
-            if i % self.worker_size == self.worker_id:
+            if i % worker_size == worker_id:
                 distributed_tasks.append(today_all_task_users[i])
-        return distributed_tasks
 
-    async def single_task_chain(self,user_id:int)->bool:
-        Booker = Book(user_id=user_id,log=self.log)
-        Booker.post_sleep = self.post_sleep
-        Booker.ws_sleep =self.ws_sleep
-        Booker.ws_send_time = self.ws_send_time
-        Booker.ws_size = self.ws_size
-        await Booker.init()
-        if Booker.inited == False:
-            self.log.warning(f'Booker实例init调用失败-user-{Booker.user_id}')
-            return False
-        ret = await Booker.run_book_chain()
-        return ret
-            
-    async def main(self):
-        self.log.info('BOOKER启动')
-        self.log.info(f"HOST:{self.host}")
-        self.log.info(f"BOOKER-SIZE: {self.worker_size}")
-        self.log.info(f'BOOKER-ID: {self.worker_id}')
-        self.log.info(f"SET-WS-SIZE:{self.ws_size}")
-        self.log.info(f"TIME-PULL-TASK:{self.pull_task_time}")
-        self.log.info(f"TIME-WS-CONNECT:{self.ws_connect_time}")
-        self.log.info(f"TIME-WS-SEND:{self.ws_send_time}")
-        self.log.info('正在测试数据库...')
-        await self.orm_init()
-        await self.orm_init()
-        await self.orm_init()
-        while True:
-            admin = await User.get_or_none(id=1)
-            if admin:
-                self.log.info(f'数据库测试成功-admin-{admin.username}')
-
-            await clock(self.pull_task_time)
-            self.log.info(f'{datetime.now()}-正在拉取任务')
-            user_id_list = await self.task_pull()
-            
-            await clock(self.ws_connect_time)
-            self.log.info(f'{datetime.now()}-开始创建任务并运行至连接WS服务器')
-            ret = asyncio.gather(
-                *[self.single_task_chain(user_id) for user_id in user_id_list]
+        bookers:list[Book] = []
+        for id in distributed_tasks:
+            booker = Book(
+                user_id=id,
+                ses=ses,
+                ws_send_time=TIME_WS_SEND,  #发送ws真正时间
+                ws_size=WS_SIZE,
+                ws_sleep=SLEEP_WS,
+                post_sleep=SLEEP_POST
             )
             try:
-                await asyncio.wait_for(ret, timeout=TASKS_TIMEOUT)
-            except asyncio.TimeoutError:
-                self.log.warning('任务超时！')
+                init_ret = await booker.init()
+            except Exception as e:
+                log.warning(f"初始化失败：{booker.user_id}-{e}")
+            if init_ret:
+                bookers.append(booker)
 
-        # await asyncio.sleep(3000) #仅测试使用！
+        await clock(TIME_WS_CONNECT)
+        tasks = []
+        for booker in bookers:
+            task = asyncio.create_task(booker.do_chain())
+            tasks.append(task)
+        
+        ret = asyncio.gather(*tasks)
+        try:
+            await asyncio.wait_for(ret, timeout=TASKS_TIMEOUT)
+        except asyncio.TimeoutError:
+            log.warning('任务超时！')
 
-    def setup(self):
-        uvloop.run(self.main())
+        log.info("处理结果")
+        for booker in bookers:
+            if booker.ret == True:
+                await booker.reduce_balance()
+                await booker.add_task_ret(1)
+            else:
+                booker.ret == False
+        log.info("今日任务完成...")
+        await ses.close()
+        #测试使用
+        
+        # await asyncio.sleep(10000)
+
+def setup(
+    host:str,
+    worker_size:int=WORKER_SIZE,
+    worker_id:int=WORKER_ID,
+):
+    """启动"""
+    uvloop.run(
+        main_loop(host=host, worker_size=worker_size, worker_id=worker_id)
+    )

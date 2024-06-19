@@ -1,15 +1,11 @@
 import uvicorn
-from book_task.book_run import Worker
+from book_task import setup as book_setup
 from pool.pool_manager import PoolM
 import argparse
 from cancel.cance_run import setup_cancel
 
 def setup_fastapi()->None:
     uvicorn.run('main:app', host='0.0.0.0', port=8000, reload=True, workers=1)
-
-def setup_booker(host:str,worker_size:int,worker_id:int)->None:
-    worker =  Worker(host=host,worker_size=worker_size,worker_id=worker_id)
-    worker.setup()
 
 def setup_task_pool_manager(host:str)->None:
     pool =  PoolM(host=host)
@@ -30,7 +26,8 @@ def setup():
         if args.host is None or args.worker_size is None or args.worker_id is None:
             print('The booker command requires --host, --worker_size, and --worker_id arguments.')
         else:
-            setup_booker(host=args.host, worker_size=args.worker_size, worker_id=args.worker_id)
+            book_setup(host=args.host, worker_size=args.worker_size, worker_id=args.worker_id)
+            
     elif args.command == "pool":
         if args.host is None:
             print('The pool command requires --host.')
