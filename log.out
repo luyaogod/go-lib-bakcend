@@ -1,0 +1,41 @@
+nohup: ignoring input
+2024-06-21 00:10:09,420 INFO:  早晨抢座启动.
+2024-06-21 00:10:09,420 INFO:  TIME_PULL_TASK [6, 29, 55]
+2024-06-21 00:10:09,420 INFO:  TIME_RUN_TASKS [6, 30, 0]
+2024-06-21 06:29:55,052 INFO:  正在拉取任务..
+2024-06-21 06:29:55,125 INFO:  今日任务 [5, 24]
+2024-06-21 06:30:00,967 DEBUG:  akpw
+2024-06-21 06:30:00,967 DEBUG:  {'libId': 10072, 'seatKey': '8,19', 'captchaCode': 'dd29266f5a70d74d220ace2320073289', 'captcha': 'akpw'}
+2024-06-21 06:30:01,155 DEBUG:  {"data":{"userAuth":{"reserve":{"reserueSeat":true}}}}
+2024-06-21 06:30:01,156 INFO:  赵梓涵-选座成功
+2024-06-21 06:30:06,138 DEBUG:  pmwc
+2024-06-21 06:30:06,139 DEBUG:  {'libId': 10071, 'seatKey': '11,19', 'captchaCode': '11c941761bdfd0e0e5a17f72d51eeb67', 'captcha': 'pmwc'}
+2024-06-21 06:30:06,256 DEBUG:  {"errors":[{"msg":"\u8bf7\u8f93\u5165\u9a8c\u8bc1\u7801","code":1000}],"data":{"userAuth":{"reserve":{"reserueSeat":null}}}}
+2024-06-21 06:30:07,385 DEBUG:  5qpb
+2024-06-21 06:30:07,385 DEBUG:  {'libId': 10071, 'seatKey': '11,19', 'captchaCode': '3f465dcf27fe75ed31f1f252a1402415', 'captcha': '5qpb'}
+2024-06-21 06:30:07,497 DEBUG:  {"errors":[{"msg":"\u8bf7\u8f93\u5165\u9a8c\u8bc1\u7801","code":1000}],"data":{"userAuth":{"reserve":{"reserueSeat":null}}}}
+2024-06-21 06:30:14,847 DEBUG:  g8kg
+2024-06-21 06:30:14,847 DEBUG:  {'libId': 10071, 'seatKey': '13,19', 'captchaCode': '7e7ec17b6e39713bec9e55bb018bb337', 'captcha': 'g8kg'}
+2024-06-21 06:30:14,976 DEBUG:  {"errors":[{"msg":"\u8be5\u5ea7\u4f4d\u5df2\u7ecf\u88ab\u4eba\u9884\u5b9a\u4e86!(2)","code":1}],"data":{"userAuth":{"reserve":{"reserueSeat":null}}}}
+2024-06-21 06:30:20,310 DEBUG:  VKUL
+2024-06-21 06:30:20,310 DEBUG:  {'libId': 10071, 'seatKey': '13,19', 'captchaCode': '25cb3c06979bed184b09b232c6f9b3c7', 'captcha': 'VKUL'}
+2024-06-21 06:30:20,430 DEBUG:  {"errors":[{"msg":"\u8be5\u5ea7\u4f4d\u5df2\u7ecf\u88ab\u4eba\u9884\u5b9a\u4e86!(2)","code":1}],"data":{"userAuth":{"reserve":{"reserueSeat":null}}}}
+2024-06-21 06:30:21,557 DEBUG:  tqet
+2024-06-21 06:30:21,557 DEBUG:  {'libId': 10071, 'seatKey': '18,11', 'captchaCode': '32d7ef516539643184b112a9e0940a9f', 'captcha': 'tqet'}
+2024-06-21 06:30:21,689 DEBUG:  {"errors":[{"msg":"\u8be5\u5ea7\u4f4d\u5df2\u7ecf\u88ab\u4eba\u9884\u5b9a\u4e86!(2)","code":1}],"data":{"userAuth":{"reserve":{"reserueSeat":null}}}}
+2024-06-21 06:30:22,817 DEBUG:  namg
+2024-06-21 06:30:22,817 DEBUG:  {'libId': 10071, 'seatKey': '18,11', 'captchaCode': '7c97de87cd2465a4cf63d4b09b969200', 'captcha': 'namg'}
+2024-06-21 06:30:22,940 DEBUG:  {"errors":[{"msg":"\u8be5\u5ea7\u4f4d\u5df2\u7ecf\u88ab\u4eba\u9884\u5b9a\u4e86!(2)","code":1}],"data":{"userAuth":{"reserve":{"reserueSeat":null}}}}
+2024-06-21 06:30:24,068 DEBUG:  vwbt
+2024-06-21 06:30:24,069 DEBUG:  {'libId': 10071, 'seatKey': '19,11', 'captchaCode': '49bcd6e76d3892f5efa6c88c02a5a9f3', 'captcha': 'vwbt'}
+2024-06-21 06:30:24,192 DEBUG:  {"errors":[{"msg":"\u8be5\u5ea7\u4f4d\u5df2\u7ecf\u88ab\u4eba\u9884\u5b9a\u4e86!(2)","code":1}],"data":{"userAuth":{"reserve":{"reserueSeat":null}}}}
+2024-06-21 06:30:25,313 DEBUG:  wkas
+2024-06-21 06:30:25,314 DEBUG:  {'libId': 10071, 'seatKey': '19,11', 'captchaCode': '3b77289221476b4b9b2e76c0328d62b1', 'captcha': 'wkas'}
+2024-06-21 06:30:25,439 DEBUG:  {"errors":[{"msg":"\u8be5\u5ea7\u4f4d\u5df2\u7ecf\u88ab\u4eba\u9884\u5b9a\u4e86!(2)","code":1}],"data":{"userAuth":{"reserve":{"reserueSeat":null}}}}
+2024-06-21 06:30:26,526 DEBUG:  主页数据: {'data': {'userAuth': {'oftenseat': {'list': []}, 'message': {'new': {'has': False, 'from_user': None, 'title': None, 'num': 0}, 'indexMsg': None}, 'reserve': {'reserve': {'token': '11229056-d06e3307c9233b962118a7ebf5dc2d1b', 'status': 2, 'user_id': 11229056, 'user_nick': '在動物園散步会看到什么', 'sch_name': '河南财经政法大学', 'lib_id': 10072, 'lib_name': '郑东校区-2楼西电子阅览区', 'lib_floor': '2楼', 'seat_key': '8,19', 'seat_name': '468', 'date': 1718922601, 'exp_date': 1718929800, 'exp_date_str': '08:30', 'validate_date': 0, 'hold_date': None, 'diff': None, 'diff_str': None, 'mark_source': None, 'isRecordUser': None, 'isChooseSeat': None, 'isRecord': None, 'mistakeNum': None, 'openTime': ' 7:30', 'threshold': None, 'daynum': None, 'closeTime': ' 22:30', 'timerange': None, 'forbidQrValid': '', 'renewTimeNext': '', 'forbidRenewTime': False, 'forbidWechatCancle': ''}, 'getSToken': '24681f88d2d04221ef7c1ba622b87b4718749f56'}, 'currentUser': {'user_id': 11229056, 'user_nick': '在動物園散步会看到什么', 'user_mobile': '18836952152', 'user_sex': 0, 'user_sch_id': 10025, 'user_sch': '河南财经政法大学', 'user_last_login': 1718864429, 'user_avatar': '/index.php/avatar/11229056.html', 'user_adate': 1661427995, 'user_student_no': '202134050918', 'user_student_name': '赵梓涵', 'area_name': None, 'user_deny': {'deny_deadline': None}, 'sch': {'sch_id': 10025, 'sch_name': '河南财经政法大学', 'activityUrl': None, 'isShowCommon': True, 'isBusy': True}}}, 'ad': [{'name': '统一头图-排序2', 'pic': 'http://wechat.v2.traceint.com/data/attachment/2020-08-03/pre_061212pyygrgnstw2d.png', 'url': 'http://wechat.v2.traceint.com/index.php/click?id=155&url=https%3A%2F%2Fmp.weixin.qq.com%2Fs%2FU3i_cpBpRr-JpeOyIDqSCQ&t=1718922746&token=644d91ba85dbf4acbef49c9dc081601d'}, {'name': '【广告】唯品会cpm广告-改汪总', 'pic': 'http://wechat.v2.traceint.com/data/attachment/2023-12-19/pre_0602453ccneacmesxh.jpg', 'url': 'http://wechat.v2.traceint.com/index.php/click?id=1837&url=https%3A%2F%2Fmp.weixin.qq.com%2Fs%2FgfOilhf338-DpEFBduoR_g&t=1718922746&token=e8341f75b1513f0222add561157e8150'}, {'name': '【广告】前程无忧（暑期实习）', 'pic': 'http://wechat.v2.traceint.com/data/attachment/2024-05-27/pre_055124u9j2lumk43gr.jpg', 'url': 'http://wechat.v2.traceint.com/index.php/click?id=2046&url=http%3A%2F%2Fadmin.traceint.com%2Fdata%2Fattachment%2F2024-05-27%2Fpre_055656wqxhh3w9hb6t.jpg&t=1718922746&token=71d95913598def21b3406d43782b6b08'}]}}
+2024-06-21 06:30:26,526 DEBUG:  24681f88d2d04221ef7c1ba622b87b4718749f56
+2024-06-21 06:30:26,599 DEBUG:  主页数据: {'data': {'userAuth': {'oftenseat': {'list': []}, 'message': {'new': {'has': False, 'from_user': None, 'title': None, 'num': 0}, 'indexMsg': None}, 'reserve': {'reserve': None, 'getSToken': 'bad2d3c3293b30f425c1972bf857756203b08ecb'}, 'currentUser': {'user_id': 41157140, 'user_nick': '长白山神树.', 'user_mobile': '17809565008', 'user_sex': 0, 'user_sch_id': 10025, 'user_sch': '河南财经政法大学', 'user_last_login': 1718885060, 'user_avatar': 'https://static.wechat.v2.traceint.com/data/attachment/avatar/041/1571/40_avatar_middle.jpg?1713784537', 'user_adate': 1694952758, 'user_student_no': '202334080145', 'user_student_name': '于英杰', 'area_name': None, 'user_deny': {'deny_deadline': None}, 'sch': {'sch_id': 10025, 'sch_name': '河南财经政法大学', 'activityUrl': None, 'isShowCommon': True, 'isBusy': True}}}, 'ad': [{'name': '统一头图-排序2', 'pic': 'http://wechat.v2.traceint.com/data/attachment/2020-08-03/pre_061212pyygrgnstw2d.png', 'url': 'http://wechat.v2.traceint.com/index.php/click?id=155&url=https%3A%2F%2Fmp.weixin.qq.com%2Fs%2FU3i_cpBpRr-JpeOyIDqSCQ&t=1718922746&token=644d91ba85dbf4acbef49c9dc081601d'}, {'name': '【广告】唯品会cpm广告-改汪总', 'pic': 'http://wechat.v2.traceint.com/data/attachment/2023-12-19/pre_0602453ccneacmesxh.jpg', 'url': 'http://wechat.v2.traceint.com/index.php/click?id=1837&url=https%3A%2F%2Fmp.weixin.qq.com%2Fs%2FgfOilhf338-DpEFBduoR_g&t=1718922746&token=e8341f75b1513f0222add561157e8150'}, {'name': '【广告】前程无忧（暑期实习）', 'pic': 'http://wechat.v2.traceint.com/data/attachment/2024-05-27/pre_055124u9j2lumk43gr.jpg', 'url': 'http://wechat.v2.traceint.com/index.php/click?id=2046&url=http%3A%2F%2Fadmin.traceint.com%2Fdata%2Fattachment%2F2024-05-27%2Fpre_055656wqxhh3w9hb6t.jpg&t=1718922746&token=71d95913598def21b3406d43782b6b08'}]}}
+2024-06-21 06:30:26,599 DEBUG:  bad2d3c3293b30f425c1972bf857756203b08ecb
+2024-06-21 06:30:26,600 INFO:  早晨抢座启动.
+2024-06-21 06:30:26,600 INFO:  TIME_PULL_TASK [6, 29, 55]
+2024-06-21 06:30:26,600 INFO:  TIME_RUN_TASKS [6, 30, 0]

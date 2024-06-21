@@ -1,3 +1,11 @@
+TIME_PULL_TASK = (19,59,0)
+TIME_WS_CONNECT = (19,59,59)
+TIME_WS_SEND = (20,0,0)
+SLEEP_WS=0.1
+SLEEP_POST=1
+TASKS_TIMEOUT=300
+WS_SIZE=120
+
 def make_ws_headers(cookie:str)->dict:
     return {
         "App-Version": "2.1.2.p1",

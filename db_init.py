@@ -1,11 +1,8 @@
-import sys
 import json
-import uvloop
 from tortoise import Tortoise,run_async
-from models import Lib,Seat,User,Task
+from models import Lib,Seat,User
 from settings import TORTOISE_ORM
 from settings import ADMIN_UUID,ADMIN_NAME
-from datetime import datetime,timedelta
 
 json_file_path = 'static/lib_and_id.json'
 with open(json_file_path, 'r', encoding='utf-8') as file:
@@ -37,7 +34,6 @@ async def insert_seat(libs):
                     await Seat.create(seat_id=seat_name, seat_key=sea_key, lib=lib)
             f.close()
 
-#test---
 
 async def main():
     await init()
@@ -49,19 +45,6 @@ async def main():
         data = json.load(file)
         for i in data:
             await User.create(username=i['username'], uuid=i['uuid'],balance=i['balance'])
-    #高优先级任务
-    now = datetime.now()
-    now -= timedelta(days=1)
-    add_time = datetime(now.year, now.month, now.day,8,0,0)
-    wx_cookie = "cookie"
-    vips = [ADMIN_NAME,"李世辉","黄欣","杨蝶","赵梓涵","刘力菀","李冰冰","赵泽萱"]
-    for vip in vips:
-        user = await User.get_or_none(username=vip)
-        if user:
-            await Task.create(add_time=add_time, wx_cookie=wx_cookie, user=user, status=0)
-        else:
-            print("用户不存在")
-
 
 if __name__ == "__main__":
     run_async(main())

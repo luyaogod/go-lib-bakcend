@@ -7,7 +7,7 @@ from api import user,admin
 from tortoise.exceptions import OperationalError, DoesNotExist, IntegrityError, ValidationError
 from utils import exception
 from fastapi.middleware.cors import CORSMiddleware
-from cookies_keeper import register_cookie_keeper
+from bk_workers.cookies_keeper import register_cookie_keeper
 
 
 app = FastAPI()

@@ -7,6 +7,4 @@ docker compose -f docker-compose.server.yml up -d
 docker exec -it backend bash
 python3 db_init.py
 
-#booker进程和pool进程
-docker compose -f docker-compose.booker.yml up -d
 ```
