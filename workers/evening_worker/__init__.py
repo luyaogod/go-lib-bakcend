@@ -1,2 +1,2 @@
-from .evening_run import setup
+from .run import setup
 

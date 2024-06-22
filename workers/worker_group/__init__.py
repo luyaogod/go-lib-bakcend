@@ -1,1 +1,1 @@
-from .main import setup
+from .run import setup

@@ -1,7 +1,7 @@
 from utils.clock import clock
 from utils.ocr import Ocr
-from utils.sql import Sql
-from .morning_func import MUser
+from .sql import Sql
+from .funcs import MUser
 from settings import mlog as log
 import aiohttp
 import uvloop
@@ -15,15 +15,18 @@ async def m_task_main(db_host:str):
         log.info("早晨抢座启动.")
         log.info(f"TIME_PULL_TASK {TIME_PULL_TASKS}")
         log.info(f"TIME_RUN_TASKS {TIME_RUN_TASKS}")
+        #创建数据库连接池
+        sql = Sql(host=db_host)
         while True:
-            # post_ses = aiohttp.ClientSession()
             await clock(TIME_PULL_TASKS)
             log.info("正在拉取任务..")
-            sql = Sql(host=db_host)
-            userids = sql.pull_morning_ids()
+            # 拉取任务
+            userids = await sql.pull_morning_ids()
             log.info( f"今日任务 {userids}")
-            user_infos = sql.get_users_info(userids=userids , time=1)
+            # 拉取用户数据
+            user_infos =await sql.get_users_info(userids=userids , time=1)
             await clock(TIME_RUN_TASKS)
+            # 创建user实例
             users:list[MUser] = []
             for user_info in user_infos:
                 user = MUser(
@@ -35,17 +38,17 @@ async def m_task_main(db_host:str):
                     ses=ses
                 )
                 users.append(user)
+            # 创建协程task
             rets = await asyncio.gather(
                 *[ user.tasks_group() for user in users]
             )
-            for ret in rets:
-                print(ret)
+            #处理任务结构
             for user in users:
                 log.debug(await user.get_user_info())
-                # if not user._ses.closed:
-                #     await user._ses.close()
-            
-            # await post_ses.close()
+            for ret in rets:
+                print(ret)
+                if ret["result"]:
+                    await sql.user_reduce_balance(int(ret["id"]))
 
 def setup(host:str):
     uvloop.run(m_task_main(db_host=host))

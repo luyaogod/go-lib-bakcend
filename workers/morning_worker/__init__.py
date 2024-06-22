@@ -1,1 +1,1 @@
-from .morning_run import setup 
+from .run import setup 

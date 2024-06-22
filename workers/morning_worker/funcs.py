@@ -5,6 +5,7 @@ import asyncio
 from PIL import Image
 from .settings import *
 from utils.ocr import Ocr
+from utils import func_debug
 from settings import mlog as log
 
 class MUser():
@@ -48,6 +49,7 @@ class MUser():
         image = Image.open(io.BytesIO(img_binary))
         image.save('output_image.jpg', 'JPEG')
 
+    @func_debug
     async def code_get(self)->dict[str,str]:
         """请求二维码以及code"""
         url = "https://wechat.v2.traceint.com/index.php/graphql/"
@@ -62,6 +64,7 @@ class MUser():
             v_img_base64 = ret['data']['captcha']['data'].split(",")[1]
             return {'code': ret['data']['captcha']['code'], 'img_64': v_img_base64}
 
+    @func_debug
     async def code_get_v(self)->any:
         """获取并识别验证码\n{'ret':True, 'captchaCode': data['code'], 'captcha': captcha}"""
         for _ in range(2):
@@ -78,6 +81,7 @@ class MUser():
         return {'ret':False, 'captchaCode': None, 'captcha': None}
 
     #请求---------------------------------------------------------------------------------
+    @func_debug
     async def get_lib_list(self):
         """获取楼层列表"""
         self.info('in_get_lib_list')
@@ -88,12 +92,14 @@ class MUser():
         url = 'https://wechat.v2.traceint.com/index.php/graphql/'
         await self._ses.post(url=url, headers=self._headers, json=pyload)
 
+    @func_debug
     async def get_unknow_js(self):
         """位置js可能会校验"""
         self.info('in_get_unknow_js')
         url = 'https://web.traceint.com/web/static/js/pages-reserve-seatMap.d4923a8b.js'
         await self._ses.get(url=url, headers=self._headers)
 
+    @func_debug
     async def get_lib(self, libId:str):
         """获取楼层"""
         json = {"operationName": "libLayout",
@@ -147,7 +153,7 @@ class MUser():
                     return True
                 elif r'\u8bf7\u8f93\u5165\u9a8c\u8bc1\u7801' in rep:
                     #验证码错误无需处理
-                    self.warning("请输入验证码")
+                    self.warning("验证码错误")
                     await asyncio.sleep(POST_SLEEP)
                 elif  r'\u60a8\u5df2\u7ecf\u9884\u5b9a\u4e86\u5ea7\u4f4d' in rep:
                     self.info(f'{self._username}-用户已预约过座位')
