@@ -84,8 +84,6 @@ class Worker():
         self.log.info(f"TIME-WS-SEND:{self.ws_send_time}")
         self.log.info('正在测试数据库...')
         await self.orm_init()
-        await self.orm_init()
-        await self.orm_init()
         while True:
             admin = await User.get_or_none(id=1)
             if admin:

@@ -16,3 +16,11 @@ services:
     command: bash -c "python3 -u setup.py cancel --host ${DB_HOST}"
     volumes:
       - .:/app
+
+  morn:
+    container_name: morn
+    build: .
+    restart: always
+    command: bash -c "python3 -u setup.py morn --host ${DB_HOST}"
+    volumes:
+      - .:/app
