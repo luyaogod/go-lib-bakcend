@@ -26,7 +26,6 @@ class EUser():
             self.ws_headers = make_ws_headers(cookie)
             self.post_headers = make_post_headers(cookie)
     
-    @func_debug
     async def do_ws(self)->bool:
         """
         ws排队动作

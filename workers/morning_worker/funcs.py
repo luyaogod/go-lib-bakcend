@@ -5,6 +5,7 @@ import asyncio
 from PIL import Image
 from .settings import *
 from utils.ocr import Ocr
+from .sql import Sql
 from utils import func_debug
 from settings import mlog as log
 
@@ -41,6 +42,7 @@ class MUser():
         self._seats = seats
         self._id = id
         self._username = username
+        self._mret = False
 
     #验证码------------------------------------------------------------------
     async def v_jpg_save(self, img_b64)->None:
@@ -49,7 +51,6 @@ class MUser():
         image = Image.open(io.BytesIO(img_binary))
         image.save('output_image.jpg', 'JPEG')
 
-    @func_debug
     async def code_get(self)->dict[str,str]:
         """请求二维码以及code"""
         url = "https://wechat.v2.traceint.com/index.php/graphql/"
@@ -64,16 +65,11 @@ class MUser():
             v_img_base64 = ret['data']['captcha']['data'].split(",")[1]
             return {'code': ret['data']['captcha']['code'], 'img_64': v_img_base64}
 
-    @func_debug
     async def code_get_v(self)->any:
         """获取并识别验证码\n{'ret':True, 'captchaCode': data['code'], 'captcha': captcha}"""
         for _ in range(2):
-            self.debug('in_code_get_v')
             data = await self.code_get()
-            
-            self.debug('out_code_get')
             captcha = await self._ocr.ocr_v(data['img_64'])
-            self.debug('out_code_get_v')
             
             if len(captcha) == 4:
                 return {'ret':True, 'captchaCode': data['code'], 'captcha': captcha}
@@ -81,10 +77,8 @@ class MUser():
         return {'ret':False, 'captchaCode': None, 'captcha': None}
 
     #请求---------------------------------------------------------------------------------
-    @func_debug
     async def get_lib_list(self):
         """获取楼层列表"""
-        self.info('in_get_lib_list')
         pyload = {
             "operationName": "list",
             "query": "query list {\n userAuth {\n reserve {\n libs(libType: -1) {\n lib_id\n lib_floor\n is_open\n lib_name\n lib_type\n lib_group_id\n lib_comment\n lib_rt {\n seats_total\n seats_used\n seats_booking\n seats_has\n reserve_ttl\n open_time\n open_time_str\n close_time\n close_time_str\n advance_booking\n }\n }\n libGroups {\n id\n group_name\n }\n reserve {\n isRecordUser\n }\n }\n record {\n libs {\n lib_id\n lib_floor\n is_open\n lib_name\n lib_type\n lib_group_id\n lib_comment\n lib_color_name\n lib_rt {\n seats_total\n seats_used\n seats_booking\n seats_has\n reserve_ttl\n open_time\n open_time_str\n close_time\n close_time_str\n advance_booking\n }\n }\n }\n rule {\n signRule\n }\n }\n}"
@@ -92,14 +86,11 @@ class MUser():
         url = 'https://wechat.v2.traceint.com/index.php/graphql/'
         await self._ses.post(url=url, headers=self._headers, json=pyload)
 
-    @func_debug
     async def get_unknow_js(self):
         """位置js可能会校验"""
-        self.info('in_get_unknow_js')
         url = 'https://web.traceint.com/web/static/js/pages-reserve-seatMap.d4923a8b.js'
         await self._ses.get(url=url, headers=self._headers)
 
-    @func_debug
     async def get_lib(self, libId:str):
         """获取楼层"""
         json = {"operationName": "libLayout",
@@ -123,17 +114,8 @@ class MUser():
             rep = await rep.text()
             return rep
 
-    async def task_chain(self, libId: int, seatKey: str)->bool:
-        """
-        单一座位请求操作集合
-
-        :param ses: aiohttp.ClientSession
-        :param ocr: ddddocr.DdddOcr
-        :param libId: 楼层id
-        :param seatKey: 座位key注意不加"." !!!
-        :return: False失败 True成功
-        """
-        self.debug('in_task_chain')
+    async def task_chain(self, libId: int, seatKey: str, db:Sql )->int:
+        """请求单个座位"""
         post_data = {'libId': libId, 'seatKey': seatKey, 'captchaCode': '', 'captcha': ''}
         
         for _ in range(2):
@@ -144,36 +126,32 @@ class MUser():
             else:
                 post_data['captchaCode'] = ret['captchaCode']
                 post_data['captcha'] = ret['captcha']
-                self.debug(post_data) 
                 await self.get_lib(libId=libId)
                 rep = await self.get_seat(**post_data)
-                self.debug(rep)
+                self.info(rep ) #输出响应
                 if 'errors' not in rep:
-                    self.info(f'{self._username}-选座成功')
-                    return True
+                    self._mret = True
+                    self.info(f'选座成功') #抢座成功
+                    return 0
                 elif r'\u8bf7\u8f93\u5165\u9a8c\u8bc1\u7801' in rep:
-                    #验证码错误无需处理
-                    self.warning("验证码错误")
+                    # 验证码错误
                     await asyncio.sleep(POST_SLEEP)
                 elif  r'\u60a8\u5df2\u7ecf\u9884\u5b9a\u4e86\u5ea7\u4f4d' in rep:
-                    self.info(f'{self._username}-用户已预约过座位')
-                    return True
+                    # 已预约过座位
+                    return 1
                 elif r'\u8be5\u5ea7\u4f4d\u5df2\u7ecf\u88ab\u4eba\u9884\u5b9a\u4e86' in rep:
-                    self.info(f'{self._username}-该座位已被抢')
-                    await asyncio.sleep(POST_SLEEP)
-                    return False
+                    # 该座位已被抢
+                    return 2
                 elif r'\u573a\u9986\u5c1a\u672a\u5f00\u653e\uff0c\u65e0\u6cd5\u64cd\u4f5c' in rep:
-                    self.info(f'{self._username}-场馆未开放')
-                    await asyncio.sleep(POST_SLEEP)
-                    return False
+                    # 场馆未开放
+                    return 3
                 else:
-                    #未捕获可能是验证码错误
-                    await asyncio.sleep(POST_SLEEP) 
-        
-        #单一座位两次请求均未能返回成功       
-        return False
+                    # 未捕获
+                    return 4
+        # 验证码校验失败两次      
+        return 5
 
-    async def tasks_group(self) :
+    async def tasks_group(self, db:Sql) :
         """
         多座位顺序请求
 
@@ -183,21 +161,25 @@ class MUser():
         :return: {"id":self._id, "result": False | True}
         """
         #模拟用户行文
-        self.debug('in_task_group')
-        await self.get_lib_list()
-        await self.get_unknow_js()
-        for seat in self._seats:
-            if seat != None:
-                try:
-                    ret = await self.task_chain(libId=seat['LibId'],seatKey=seat['Key'])
-                except Exception as e:
-                    self.warning(f"座位请求出错：{e}")
-                if ret:
-                    return {"id":self._id, "result": True}
-        # await self._ses.close()
-        #全部失败
-        return {"id":self._id, "result": False}
-        
+        try:
+            await self.get_lib_list()
+            await self.get_unknow_js()
+            for seat in self._seats:
+                if seat != None:
+                    try:
+                        ret = await self.task_chain(libId=seat['LibId'],seatKey=seat['Key'], db=db)
+                        if ret in (0, 1):   # 0抢座成功 1选过座位了 3场馆未开放
+                            return True
+                        else:   #验证码错误多次， 未捕获错误， 座位被抢了
+                            await asyncio.sleep(POST_SLEEP)
+                    except Exception as e:
+                        self.warning(f"座位请求出错：{e}")
+                        return False    #单个座位出现报错直接返回
+            return False
+        except Exception as e:
+            log.warning(f"tasks_group捕获错误{e}")
+            return False #单人任务组捕获错误
+    
     #测试工具---------------------------------------------------------------------------------------------------
     async def get_user_info(self)->str:
         """打印主页数据, 返回stoken"""

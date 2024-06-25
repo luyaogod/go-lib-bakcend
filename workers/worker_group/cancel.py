@@ -68,7 +68,7 @@ async def cancels_run(db):
         await clock(TIME_SEAT_CLEAN) 
         cookies = await pull_cookies(db)
         ret = asyncio.gather(
-            *[do_chain(ses, cookie) for cookie in range(cookies)]
+            *[do_chain(ses, cookie) for cookie in cookies]
         )
         try:
             await asyncio.wait_for(ret, timeout=300)

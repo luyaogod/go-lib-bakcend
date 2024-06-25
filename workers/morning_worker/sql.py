@@ -1,5 +1,6 @@
 import aiomysql
 from typing import Optional
+from datetime import date
 
 DB_CONF = {
     # "host": "8.130.141.190",
@@ -83,12 +84,20 @@ SELECT user_id FROM task WHERE id in (SELECT task_id From task_pool);
                 datas = await cursor.fetchall()
                 return [data['user_id'] for data in datas]
 
-    async def user_reduce_balance(self, user_id: int):
-        pool = await self._get_pool()
-        async with pool.acquire() as conn:
+    async def reduce_balance(self, user_id: int):
+        async with self.pool.acquire() as conn:
             async with conn.cursor() as cursor:
                 sql = "UPDATE user SET balance = balance - 1 WHERE id = %s;"
                 await cursor.execute(sql, (user_id,))
+                await conn.commit()
+
+    async def add_ret(self, user_id:int ,ret:int):
+        """ret 0成功 1失败"""
+        async with self.pool.acquire() as conn:
+            async with conn.cursor() as cursor:
+                sql = "INSERT INTO morning_task_ret (time, status, user_id) VALUES (%s, %s, %s)"
+                time = str(date.today())
+                await cursor.execute(sql, (time, ret, user_id))
                 await conn.commit()
 
 if __name__ == "__main__":

@@ -39,16 +39,17 @@ async def m_task_main(db_host:str):
                 )
                 users.append(user)
             # 创建协程task
-            rets = await asyncio.gather(
-                *[ user.tasks_group() for user in users]
+            await asyncio.gather(
+                *[ user.tasks_group(sql) for user in users]
             )
             #处理任务结构
             for user in users:
-                log.debug(await user.get_user_info())
-            for ret in rets:
-                print(ret)
-                if ret["result"]:
-                    await sql.user_reduce_balance(int(ret["id"]))
+                print(f"{user._username} {user._mret}")
+                if user._mret:
+                    await sql.reduce_balance(user_id=user._id)
+                    await sql.add_ret(user._id, 1)
+                else:
+                    await sql.add_ret(user._id, 0)
 
 def setup(host:str):
     uvloop.run(m_task_main(db_host=host))
