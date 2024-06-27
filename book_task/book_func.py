@@ -126,20 +126,25 @@ class Book(UserObj):
             count = 0
             while count < self.ws_size:
                 await ws.send_str('{"ns":"prereserve/queue","msg":""}')
-                data = await ws.receive()
-                if data.type == aiohttp.WSMsgType.TEXT:
-                    if count == 0:
-                        self.log.info(f'ws-排队名次{data.json()}')
-                if data.data == WS_ERROR_FAIL_COOKIE:
-                    self.log.warning(f"ws-cookie失效-user-{self.user_id}")
-                    break
-                if data.data == WS_SUCCESS_QUEUE:
-                    self.log.info('ws-排队成功')
-                    result = True
-                    break
-                if WS_SUCCESS_BOOK in data.data:
-                    self.log.info('ws-已预约座位')
-                    break
+                try:
+                    data = await ws.receive()
+                    if not data:
+                        pass 
+                    if data.type == aiohttp.WSMsgType.TEXT:
+                        if count == 0:
+                            self.log.info(f'ws-排队名次{data.json()}')
+                    if data.data == WS_ERROR_FAIL_COOKIE:
+                        self.log.warning(f"ws-cookie失效-user-{self.user_id}")
+                        break
+                    if data.data == WS_SUCCESS_QUEUE:
+                        self.log.info('ws-排队成功')
+                        result = True
+                        break
+                    if WS_SUCCESS_BOOK in data.data:
+                        self.log.info('ws-已预约座位')
+                        break
+                except Exception as e:
+                    self.log.info(f"ws-error {e}")
                 await asyncio.sleep(self.ws_sleep)
                 count += 1
             if count >= self.ws_size:
@@ -202,6 +207,9 @@ class Book(UserObj):
                 return False
         except asyncio.CancelledError:
             await self.add_task_ret(0)
+            return False
+        except Exception as e:
+            self.log(f"run_book_chain-error {e}")
             return False
         finally:
             if not self.ses.closed:
